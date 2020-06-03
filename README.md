@@ -1,4 +1,4 @@
-# Coin Game
+# Pig Racing
 
 ## Project setup
 ```
@@ -22,4 +22,4 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
-"# pig-racing" 
+"# pig-racing"

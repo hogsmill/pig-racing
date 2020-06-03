@@ -1,31 +1,34 @@
 <template>
   <div id="app" class="mb-4">
     <h1>Pig Racing</h1>
-    <div class="current-race">
+    <div :class="{hidden : running }" class="current-race">
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
     </div>
     <div class="container">
-      <div v-if="running" class="video">
-        <button class="btn btn-primary btn-sm" @click="finish()">Finish</button>
-        <video v-if="currentRace == 0" width="50%" controls><source src="../src/assets/img/VTS_01_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 1" width="50%" controls><source src="../src/assets/img/VTS_02_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 2" width="50%" controls><source src="../src/assets/img/VTS_03_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 3" width="50%" controls><source src="../src/assets/img/VTS_04_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 4" width="50%" controls><source src="../src/assets/img/VTS_05_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 5" width="50%" controls><source src="../src/assets/img/VTS_06_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 6" width="50%" controls><source src="../src/assets/img/Race SEVEN.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 7" width="50%" controls><source src="../src/assets/img/Race EIGHT.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 8" width="50%" controls><source src="../src/assets/img/Race NINE.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 9" width="50%" controls><source src="../src/assets/img/Race TEN.mp4" type="video/mp4"></video>
+      <div :class="{hidden : !running }" class="video">
+        <div class="controls">
+          <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
+          <button class="btn btn-primary btn-sm" @click="finish()">Finish</button>
+        </div>
+        <video v-if="currentRace == 0" width="50%" controls><source src="../src/assets/video/VTS_01_1.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 1" width="50%" controls><source src="../src/assets/video/VTS_02_1.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 2" width="50%" controls><source src="../src/assets/video/VTS_03_1.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 3" width="50%" controls><source src="../src/assets/video/VTS_04_1.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 4" width="50%" controls><source src="../src/assets/video/VTS_05_1.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 5" width="50%" controls><source src="../src/assets/video/VTS_06_1.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 6" width="50%" controls><source src="../src/assets/video/Race SEVEN.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 7" width="50%" controls><source src="../src/assets/video/Race EIGHT.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 8" width="50%" controls><source src="../src/assets/video/Race NINE.mp4" type="video/mp4"></video>
+        <video v-if="currentRace == 9" width="50%" controls><source src="../src/assets/video/Race TEN.mp4" type="video/mp4"></video>
       </div>
-      <div v-if="!running" class="card-deck">
+      <div :class="{hidden : running }" class="card-deck">
         <div class="races card-body bg-light mb-6 col-md-6 no-padding-r-l">
           <div v-for="(race, raceIndex) in races" :key="raceIndex">
             <div class="race" :class="{ current : currentRace == raceIndex }">
               <div class="race-name">
                 <div class="race-name-name">{{race['name']}}</div>
                 <div v-if="currentRace == raceIndex && !race['hasRun']" class="places">
-                  <button class="btn btn-primary btn-sm" @click="runRace(race)">Run Race</button>
+                  <button class="btn btn-primary btn-sm run-race" @click="runRace(race)">Run Race</button>
                 </div>
                 <div v-if="race['hasRun']" class="places">
                   <span class="place"><img src="../src/assets/img/1st.png" /> {{getPlace(race, 1)}}</span>
@@ -33,7 +36,7 @@
                   <span class="place"><img src="../src/assets/img/3rd.png" /> {{getPlace(race, 3)}}</span>
                 </div>
               </div>
-              <table v-if="raceIndex == currentRace" border>
+              <table v-if="raceIndex == currentRace">
                 <tr>
                   <td colspan="6"></td>
                   <td colspan="3">Places</td>
@@ -44,12 +47,12 @@
                   <td v-for="(pigPunter, pigPunterIndex) in punters" :key="pigPunterIndex">
                     <img @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter['name'])" class="avatar" />
                   </td>
-                  <td :class="{ placed: pig['place'] == 1 }" @click="place(race, pig, 1)">1</td>
-                  <td :class="{ placed: pig['place'] == 2 }" @click="place(race, pig, 2)">2</td>
-                  <td :class="{ placed: pig['place'] == 3 }" @click="place(race, pig, 3)">3</td>
+                  <td :class="{ gold: pig['place'] == 1 }" @click="place(race, pig, 1)">1</td>
+                  <td :class="{ silver: pig['place'] == 2 }" @click="place(race, pig, 2)">2</td>
+                  <td :class="{ bronze: pig['place'] == 3 }" @click="place(race, pig, 3)">3</td>
                   <td>{{pig['name']}}</td>
                   <td v-for="(bet, betIndex) in pig['bets']" :key="betIndex">
-                    <img v-bind:src="getAvatar(bet['name'])" class="avatar" />
+                    <img v-bind:src="getAvatar(bet)" class="avatar" />
                   </td>
                 </tr>
               </table>
@@ -258,13 +261,13 @@ export default {
           var racePig = pigs[j]
           for (var k = 0; k < racePig['bets'].length; k++) {
             var bet = racePig['bets'][k]
-            if (bet['name'] == punter['name']) {
+            if (bet == punter['name']) {
               racePig['bets'].splice(k, 1)
             }
           }
         }
       }
-      pig['bets'].push(punter)
+      pig['bets'].push(punter['name'])
       this.calculateWinnings()
     },
     place: function(race, pig, place) {
@@ -276,25 +279,32 @@ export default {
       pig['place'] = place
       this.calculateWinnings()
     },
+    addWinnings: function(name, place) {
+      for (var i = 0; i < this.punters.length; i++) {
+        var punter = this.punters[i]
+        if (name == punter['name']) {
+          switch(place) {
+            case 1:
+              punter['winnings'] = punter['winnings'] + 5
+              break
+            case 2:
+              punter['winnings'] = punter['winnings'] + 3
+              break
+            case 3:
+              punter['winnings'] = punter['winnings'] + 1
+              break
+            default:
+              console.log('unknown place')
+          }
+        }
+      }
+    },
     calculateRaceWinnings(race) {
       for (var i = 0; i < race['pigs'].length; i++) {
         var pig = race['pigs'][i]
         if (pig['place'] > 0) {
           for (var j = 0; j < pig['bets'].length; j++) {
-            var punter = pig['bets'][j]
-            switch(pig['place']) {
-              case 1:
-                punter['winnings'] = punter['winnings'] + 5
-                break
-              case 2:
-                punter['winnings'] = punter['winnings'] + 3
-                break
-              case 3:
-                punter['winnings'] = punter['winnings'] + 1
-                break
-              default:
-                console.log('unknown place')
-            }
+            this.addWinnings(pig['bets'][j], pig['place'])
           }
         }
       }
@@ -308,12 +318,15 @@ export default {
         this.calculateRaceWinnings(race)
       }
     },
-    runRace: function(race) {
+    runRace: function() {
       this.running = true
-      race['hasRun'] = true
+    },
+    backToBetting: function() {
+      this.running = false
     },
     finish: function() {
       this.running = false
+      this.races[this.currentRace]['hasRun'] = true
     }
   }
 }
@@ -321,13 +334,19 @@ export default {
 
 <style>
   div { vertical-align: top; }
+
+  .hidden { visibility: hidden; height: 0; }
+
   .current-race { padding: 6px; }
   .races { width: 48%; display: inline-block; }
   .race { padding-bottom: 6px; }
   .race-name { position: relative; text-align: left; padding: 0.5em; background-color: #bbb; color: #fff; }
   .race-name-name { font-weight: bold; width: 20%; display: inline; }
   .race table { width: 100%; }
-  .placed { background-color: #666; color: #fff; }
+  .run-race { position: relative; top: -5px; }
+  .gold { border-radius: 6px; color: #fff; background-color: goldenrod; }
+  .silver { border-radius: 6px; color: #fff; background-color: silver; }
+  .bronze { border-radius: 6px; color: #fff; background-color: saddlebrown; }
   .current { margin-bottom: 2px; }
   .places { text-align: right; position: absolute; right: 6px; top: 8px; width: 78%; display: inline; }
   .places span { vertical-align: middle; display: inline; margin: 2px;  }
@@ -338,4 +357,6 @@ export default {
   .avatar { width: 20px; height: 20px; }
   .punter-winnings { width: 80%; display: inline-block; margin: 6px 0; }
   .total { background-color: green; color: #fff; }
+
+  .video { vertical-align: middle; }
 </style>
