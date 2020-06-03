@@ -41,7 +41,7 @@
                   <td colspan="6"></td>
                   <td colspan="3">Places</td>
                   <td></td>
-                  <td colspan="6">Bets</td>
+                  <td colspan="6"><div class="bet-header">Bets</div></td>
                 </tr>
                 <tr v-for="(pig, pigIndex) in race['pigs']" :key="pigIndex">
                   <td v-for="(pigPunter, pigPunterIndex) in punters" :key="pigPunterIndex">
@@ -51,7 +51,7 @@
                   <td :class="{ silver: pig['place'] == 2 }" @click="place(race, pig, 2)">2</td>
                   <td :class="{ bronze: pig['place'] == 3 }" @click="place(race, pig, 3)">3</td>
                   <td>{{pig['name']}}</td>
-                  <td v-for="(bet, betIndex) in pig['bets']" :key="betIndex">
+                  <td v-for="(bet, betIndex) in pig['bets']" :key="'Bet-' + betIndex">
                     <img v-bind:src="getAvatar(bet)" class="avatar" />
                   </td>
                 </tr>
@@ -255,15 +255,13 @@ export default {
       }
     },
     betOn: function(pig, punter) {
-      for (var i = 0; i < this.races.length; i++) {
-        var pigs = this.races[i]['pigs']
-        for (var j = 0; j < pigs.length; j++) {
-          var racePig = pigs[j]
-          for (var k = 0; k < racePig['bets'].length; k++) {
-            var bet = racePig['bets'][k]
-            if (bet == punter['name']) {
-              racePig['bets'].splice(k, 1)
-            }
+      var pigs = this.races[this.currentRace]['pigs']
+      for (var j = 0; j < pigs.length; j++) {
+        var racePig = pigs[j]
+        for (var k = 0; k < racePig['bets'].length; k++) {
+          var bet = racePig['bets'][k]
+          if (bet == punter['name']) {
+            racePig['bets'].splice(k, 1)
           }
         }
       }
@@ -343,6 +341,7 @@ export default {
   .race-name { position: relative; text-align: left; padding: 0.5em; background-color: #bbb; color: #fff; }
   .race-name-name { font-weight: bold; width: 20%; display: inline; }
   .race table { width: 100%; }
+  .bet-header { width: 150px; }
   .run-race { position: relative; top: -5px; }
   .gold { border-radius: 6px; color: #fff; background-color: goldenrod; }
   .silver { border-radius: 6px; color: #fff; background-color: silver; }
