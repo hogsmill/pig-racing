@@ -7,19 +7,21 @@
     <div class="container">
       <div :class="{hidden : !running }" class="video">
         <div class="controls">
-          <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
-          <button class="btn btn-primary btn-sm" @click="finish()">Finish</button>
+        <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">Play</button>
+        <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">Pause</button>
+        <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
+        <button class="btn btn-primary btn-sm" @click="finish()">Finish</button>
         </div>
-        <video v-if="currentRace == 0" width="50%" controls><source src="../src/assets/video/VTS_01_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 1" width="50%" controls><source src="../src/assets/video/VTS_02_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 2" width="50%" controls><source src="../src/assets/video/VTS_03_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 3" width="50%" controls><source src="../src/assets/video/VTS_04_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 4" width="50%" controls><source src="../src/assets/video/VTS_05_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 5" width="50%" controls><source src="../src/assets/video/VTS_06_1.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 6" width="50%" controls><source src="../src/assets/video/Race SEVEN.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 7" width="50%" controls><source src="../src/assets/video/Race EIGHT.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 8" width="50%" controls><source src="../src/assets/video/Race NINE.mp4" type="video/mp4"></video>
-        <video v-if="currentRace == 9" width="50%" controls><source src="../src/assets/video/Race TEN.mp4" type="video/mp4"></video>
+        <video id="video-0" v-if="currentRace == 0" width="50%" controls><source src="../src/assets/video/VTS_01_1.mp4" type="video/mp4"></video>
+        <video id="video-1" v-if="currentRace == 1" width="50%" controls><source src="../src/assets/video/VTS_02_1.mp4" type="video/mp4"></video>
+        <video id="video-2" v-if="currentRace == 2" width="50%" controls><source src="../src/assets/video/VTS_03_1.mp4" type="video/mp4"></video>
+        <video id="video-3" v-if="currentRace == 3" width="50%" controls><source src="../src/assets/video/VTS_04_1.mp4" type="video/mp4"></video>
+        <video id="video-4" v-if="currentRace == 4" width="50%" controls><source src="../src/assets/video/VTS_05_1.mp4" type="video/mp4"></video>
+        <video id="video-5" v-if="currentRace == 5" width="50%" controls><source src="../src/assets/video/VTS_06_1.mp4" type="video/mp4"></video>
+        <video id="video-6" v-if="currentRace == 6" width="50%" controls><source src="../src/assets/video/Race SEVEN.mp4" type="video/mp4"></video>
+        <video id="video-7" v-if="currentRace == 7" width="50%" controls><source src="../src/assets/video/Race EIGHT.mp4" type="video/mp4"></video>
+        <video id="video-8" v-if="currentRace == 8" width="50%" controls><source src="../src/assets/video/Race NINE.mp4" type="video/mp4"></video>
+        <video id="video-9" v-if="currentRace == 9" width="50%" controls><source src="../src/assets/video/Race TEN.mp4" type="video/mp4"></video>
       </div>
       <div :class="{hidden : running }" class="card-deck">
         <div class="races card-body bg-light mb-6 col-md-6 no-padding-r-l">
@@ -83,6 +85,7 @@ export default {
     return {
       currentRace: -1,
       running: false,
+      playing: false,
       races: [
         {
           name: "Race One",
@@ -236,6 +239,9 @@ export default {
     }
   },
   methods: {
+    playPause: function() {
+      this.socket.emit("playPause")
+    },
     getWidth(n) {
       return n / this.races.length * 10 + '%'
     },
@@ -362,6 +368,16 @@ export default {
     this.socket.on("runRace", () => {
       this.running = true
     }),
+    this.socket.on("playPause", () => {
+      var video = document.getElementById("video-" + this.currentRace)
+      if (video.paused) {
+        video.play()
+        this.playing = true
+      } else {
+        video.pause()
+        this.playing = false
+      }
+    })
     this.socket.on("backToBetting", () => {
       this.running = false
     }),
