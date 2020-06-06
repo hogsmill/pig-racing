@@ -353,7 +353,7 @@ export default {
     }
   },
   created() {
-    this.socket = io("http://localhost:3001");
+    this.socket = io("http://localhost:3000");
   },
   mounted() {
     this.socket.on("setRace", (data) => {
