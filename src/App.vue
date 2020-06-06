@@ -74,6 +74,8 @@
 </template>
 
 <script>
+import io from "socket.io-client";
+
 export default {
   name: 'App',
   components: {},
@@ -253,11 +255,18 @@ export default {
       } else {
         this.currentRace = -1
       }
+      this.socket.emit("setRace", { race: this.currentRace })
     },
     betOn: function(pig, punter) {
+      this.socket.emit("bet", { pig: pig, punter: punter })
+    },
+    _betOn: function(pig, punter) {
       var pigs = this.races[this.currentRace]['pigs']
       for (var j = 0; j < pigs.length; j++) {
         var racePig = pigs[j]
+        if (racePig['name'] == pig['name']) {
+          pig = racePig
+        }
         for (var k = 0; k < racePig['bets'].length; k++) {
           var bet = racePig['bets'][k]
           if (bet == punter['name']) {
@@ -268,8 +277,19 @@ export default {
       pig['bets'].push(punter['name'])
       this.calculateWinnings()
     },
-    place: function(race, pig, place) {
-      for (var i = 0; i < race['pigs'].length; i++) {
+    place : function(race, pig, place) {
+      this.socket.emit("place", { race: race, pig: pig, place: place })
+    },
+    _place: function(race, pig, place) {
+      for (var i = 0; i < this.races.length; i++) {
+        if (this.races[i]['name'] == race['name']) {
+          race = this.races[i]
+        }
+      }
+      for (i = 0; i < race['pigs'].length; i++) {
+        if (race['pigs'][i]['name'] == pig['name']) {
+          pig = race['pigs'][i]
+        }
         if (race['pigs'][i]['place'] == place) {
           race['pigs'][i]['place'] = 0
         }
@@ -317,20 +337,46 @@ export default {
       }
     },
     runRace: function() {
-      this.running = true
+      this.socket.emit("runRace")
     },
     backToBetting: function() {
-      this.running = false
+      this.socket.emit("backToBetting", {})
     },
     finish: function() {
+      this.socket.emit("finish", {})
+    }
+  },
+  created() {
+    this.socket = io("http://localhost:3001");
+  },
+  mounted() {
+    this.socket.on("setRace", (data) => {
+      this.currentRace = data['race']
+    }),
+    this.socket.on("bet", (data) => {
+      this._betOn(data['pig'], data['punter'])
+    }),
+    this.socket.on("place", (data) => {
+      this._place(data['race'], data['pig'], data['place'])
+    }),
+    this.socket.on("runRace", () => {
+      this.running = true
+    }),
+    this.socket.on("backToBetting", () => {
+      this.running = false
+    }),
+    this.socket.on("finish", () => {
       this.running = false
       this.races[this.currentRace]['hasRun'] = true
-    }
+    })
   }
 }
 </script>
 
 <style>
+
+  .socket { background-color: yellow; }
+
   div { vertical-align: top; }
 
   .hidden { visibility: hidden; height: 0; }
