@@ -22,4 +22,4 @@ yarn-error.log*
 
 # videos
 
-src/assets/video
+#src/assets/video
