@@ -32,6 +32,8 @@ io.on("connection", (socket) => {
   socket.on("finish", () => { emit("finish") })
 });
 
-http.listen(3001, () => {
-  console.log("Listening on *:3001");
+var port = 3000
+
+http.listen(port, () => {
+  console.log("Listening on *:" + port);
 });
