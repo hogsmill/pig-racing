@@ -32,7 +32,7 @@ io.on("connection", (socket) => {
   socket.on("finish", () => { emit("finish") })
 });
 
-var port = 3000
+var port = process.argv[2] || 3010
 
 http.listen(port, () => {
   console.log("Listening on *:" + port);
