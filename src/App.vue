@@ -376,6 +376,7 @@ export default {
     }),
     this.socket.on("playPause", () => {
       var video = document.getElementById("video-" + this.currentRace)
+      console.log(video.src)
       if (video.paused) {
         video.play()
         this.playing = true
