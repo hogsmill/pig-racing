@@ -21,7 +21,8 @@
               <div class="race-name">
                 <div class="race-name-name">{{race['name']}}</div>
                 <div v-if="currentRace == raceIndex && !race['hasRun']" class="places">
-                  <button class="btn btn-primary btn-sm run-race" @click="runRace(race)">Run Race</button>
+                  <button v-if="!race['betsPlaced']" class="btn btn-primary btn-sm run-race" @click="placeBets()">Place Bets</button>
+                  <button v-if="race['betsPlaced']" class="btn btn-primary btn-sm run-race" @click="runRace()">Run Race</button>
                 </div>
                 <div v-if="race['hasRun']" class="places">
                   <span class="place"><img src="../src/assets/img/1st.png" /> {{getPlace(race, 1)}}</span>
@@ -80,6 +81,7 @@ export default {
       races: [
         {
           name: "Race One",
+          betsPlaced: false,
           hasRun: false,
           video: 'VTS_01_1.mp4',
           pigs: [
@@ -95,6 +97,7 @@ export default {
         },
         {
           name: "Race Two",
+          betsPlaced: false,
           hasRun: false,
           video: 'VTS_02_1.mp4',
           pigs: [
@@ -110,6 +113,7 @@ export default {
         },
         {
           name: "Race Three",
+          betsPlaced: false,
           hasRun: false,
           video: 'VTS_03_1.mp4',
           pigs: [
@@ -125,6 +129,7 @@ export default {
         },
         {
           name: "Race Four",
+          betsPlaced: false,
           hasRun: false,
           video: 'VTS_04_1.mp4',
           pigs: [
@@ -140,6 +145,7 @@ export default {
         },
         {
           name: "Race Five",
+          betsPlaced: false,
           hasRun: false,
           video: 'VTS_05_1.mp4',
           pigs: [
@@ -155,6 +161,7 @@ export default {
         },
         {
           name: "Race Six",
+          betsPlaced: false,
           hasRun: false,
           video: 'VTS_06_1.mp4',
           pigs: [
@@ -170,6 +177,7 @@ export default {
         },
         {
           name: "Race Seven",
+          betsPlaced: false,
           hasRun: false,
           video: 'Race SEVEN.mp4',
           pigs: [
@@ -185,6 +193,7 @@ export default {
         },
         {
           name: "Race Eight",
+          betsPlaced: false,
           hasRun: false,
           video: 'Race EIGHT.mp4',
           pigs: [
@@ -200,6 +209,7 @@ export default {
         },
         {
           name: "Race Nine",
+          betsPlaced: false,
           hasRun: false,
           video: 'Race NINE.mp4',
           pigs: [
@@ -215,6 +225,7 @@ export default {
         },
         {
           name: "Race Ten",
+          betsPlaced: false,
           hasRun: false,
           video: 'Race TEN.mp4',
           pigs: [
@@ -343,6 +354,9 @@ export default {
         this.calculateRaceWinnings(race)
       }
     },
+    placeBets: function() {
+      this.socket.emit("placeBets")
+    },
     runRace: function() {
       this.socket.emit("runRace")
     },
@@ -351,6 +365,23 @@ export default {
     },
     finish: function() {
       this.socket.emit("finish", {})
+    },
+    loadVideo: function() {
+      var video = document.getElementById('video')
+      video.src = "./video/" + this.races[this.currentRace]['video']
+      video.load()
+    },
+    setVideoTime: function() {
+      var video = document.getElementById('video')
+      video.currentTime = 170000
+    },
+    playVideo: function() {
+      var video = document.getElementById('video')
+      video.play()
+    },
+    pauseVideo: function() {
+      var video = document.getElementById('video')
+      video.pause()
     }
   },
   created() {
@@ -372,11 +403,20 @@ export default {
     this.socket.on("place", (data) => {
       this._place(data['race'], data['pig'], data['place'])
     }),
+    this.socket.on("placeBets", () => {
+      this.running = true
+      this.loadVideo()
+      this.playVideo()
+      this.playing = true
+    }),
+    this.socket.on("backToBetting", () => {
+      this.pauseVideo()
+      this.running = false
+    }),
     this.socket.on("runRace", () => {
       this.running = true
-      var video = document.getElementById('video')
-      video.src = "./video/" + this.races[this.currentRace]['video']
-      video.load()
+      this.setVideoTime(17000)
+      this.playVideo()
       this.playing = false
     }),
     this.socket.on("playPause", () => {
