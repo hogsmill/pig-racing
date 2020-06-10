@@ -22,3 +22,5 @@ if [ -f "src/server.js" ]; then
   fi
   node src/server.js $PORT &
 fi
+
+ps -ef | grep node
