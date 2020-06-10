@@ -1,7 +1,7 @@
 <template>
   <div id="app" class="mb-4">
     <h1>Pig Racing</h1>
-    <div :class="{hidden : running }" class="current-race">
+    <div v-if="admin" :class="{hidden : running }" class="current-race">
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
     </div>
     <div class="container">
