@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
 
   socket.on("playPause", () => { emit("playPause") })
 
-  socket.on("placeBets", () => { emit("placeBets") })
+  socket.on("showPigs", () => { emit("showPigs") })
 
   socket.on("runRace", () => { emit("runRace") })
 
