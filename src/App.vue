@@ -6,7 +6,7 @@
     </div>
     <div class="container">
       <div :class="{hidden : !running }" class="video">
-        <div class="controls">
+        <div v-if="admin" class="controls">
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">Play</button>
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">Pause</button>
           <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
@@ -20,7 +20,7 @@
             <div class="race" :class="{ current : currentRace == raceIndex }">
               <div class="race-name">
                 <div class="race-name-name">{{race['name']}}</div>
-                <div v-if="currentRace == raceIndex && !race['hasRun']" class="places">
+                <div v-if="admin && currentRace == raceIndex && !race['hasRun']" class="places">
                   <button v-if="!race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="showPigs()">Place Bets</button>
                   <button v-if="race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="runRace()">Run Race</button>
                 </div>
@@ -75,6 +75,7 @@ export default {
   components: {},
   data() {
     return {
+      admin: false,
       currentRace: -1,
       running: false,
       playing: false,
@@ -395,6 +396,10 @@ export default {
       this.socket = io(connStr)
   },
   mounted() {
+    if (location.search == "?admin") {
+      this.admin = true
+    }
+
     this.socket.on("setRace", (data) => {
       this.currentRace = data['race']
     }),
