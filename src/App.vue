@@ -12,7 +12,7 @@
           <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
           <button class="btn btn-primary btn-sm" @click="finish()">Finish</button>
         </div>
-        <video id="video" width="50%" controls><source src="" type="video/mp4"></video>
+        <video id="video" width="70%" controls><source src="" type="video/mp4"></video>
       </div>
       <div :class="{hidden : running }" class="card-deck">
         <div class="races card-body bg-light mb-6 col-md-6 no-padding-r-l">
