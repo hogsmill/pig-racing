@@ -376,7 +376,7 @@ export default {
       this.running = true
       var video = document.getElementById('video')
       video.src = "./video/" + this.races[this.currentRace]['video']
-      console.log(video.src)
+      console.log(video.currentSrc)
       video.load()
     }),
     this.socket.on("playPause", () => {
