@@ -374,7 +374,7 @@ export default {
     },
     setVideoTime: function() {
       var video = document.getElementById('video')
-      video.currentTime = 100000
+      video.currentTime = 110
     },
     playVideo: function() {
       var video = document.getElementById('video')
