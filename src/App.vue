@@ -297,7 +297,9 @@ export default {
       this.calculateWinnings()
     },
     place : function(race, pig, place) {
-      this.socket.emit("place", { race: race, pig: pig, place: place })
+      if (this.admin) {
+        this.socket.emit("place", { race: race, pig: pig, place: place })
+      }
     },
     _place: function(race, pig, place) {
       for (var i = 0; i < this.races.length; i++) {
