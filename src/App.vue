@@ -2,7 +2,8 @@
   <div id="app" class="mb-4">
     <h1>Pig Racing</h1>
     <div v-if="host" :class="{hidden : running }" class="current-race">
-      <button class="btn btn-primary btn-sm" @click="testVideo()">Test Video</button>
+    <button class="btn btn-primary btn-sm" @click="testVideo()">Test Play Video</button>
+    <button class="btn btn-primary btn-sm" @click="testVideoFrom()">Test Play Video From</button>
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
     </div>
     <div class="container">
@@ -272,11 +273,18 @@ export default {
     testVideo: function() {
       this.socket.emit("testVideo")
     },
+    testVideoFrom: function() {
+      this.socket.emit("testVideoFrom")
+    },
     _testVideo: function() {
       var video = document.getElementById('video')
       video.src = "./video/TestVideo.mp4"
       video.load()
       this.running = true
+    },
+    _testVideoFrom: function() {
+      this.setVideoTime(6000)
+      this.playVideo()
     },
     nextRace: function() {
       if (this.currentRace < this.races.length - 1) {
@@ -385,9 +393,9 @@ export default {
       video.src = "./video/" + this.races[this.currentRace]['video']
       video.load()
     },
-    setVideoTime: function() {
+    setVideoTime: function(t) {
       var video = document.getElementById('video')
-      video.currentTime = 110
+      video.currentTime = t
     },
     playVideo: function() {
       var video = document.getElementById('video')
@@ -415,6 +423,10 @@ export default {
     this.socket.on("testVideo", () => {
       this._testVideo()
     }),
+    this.socket.on("testVideoFrom", () => {
+      this._testVideoFrom()
+    }),
+
     this.socket.on("setRace", (data) => {
       this.currentRace = data['race']
     }),
