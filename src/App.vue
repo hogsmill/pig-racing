@@ -287,7 +287,7 @@ export default {
       this.running = true
     },
     _testVideoFrom: function() {
-      this.setVideoTime(150)
+      this.setVideoTime(30)
       this.playVideo()
       this.running = true
     },
@@ -460,7 +460,7 @@ export default {
     }),
     this.socket.on("runRace", () => {
       this.running = true
-      this.setVideoTime(17000)
+      this.setVideoTime(110)
       this.playVideo()
       this.playing = false
     }),
