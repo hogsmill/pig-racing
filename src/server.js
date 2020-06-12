@@ -35,6 +35,8 @@ io.on("connection", (socket) => {
   socket.on("testVideo", (data) => { emit("testVideo", data) })
 
   socket.on("testVideoFrom", (data) => { emit("testVideoFrom", data) })
+  
+  socket.on("stopTest", (data) => { emit("stopTest", data) })
 
   socket.on("setRace", (data) => { emit("setRace", data) })
 

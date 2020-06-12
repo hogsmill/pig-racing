@@ -9,6 +9,7 @@
     <div class="container">
       <div :class="{hidden : !running }" class="video">
         <div v-if="host" class="controls">
+          <button class="btn btn-primary btn-sm" @click="stopTest()">Stop Test</button>
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">Play</button>
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">Pause</button>
           <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
@@ -276,6 +277,9 @@ export default {
     testVideoFrom: function() {
       this.socket.emit("testVideoFrom")
     },
+    stopTest: function() {
+      this.socket.emit("stopTest")
+    },
     _testVideo: function() {
       var video = document.getElementById('video')
       video.src = "./video/TestVideo.mp4"
@@ -285,6 +289,10 @@ export default {
     _testVideoFrom: function() {
       this.setVideoTime(6000)
       this.playVideo()
+    },
+    _stopTest: function() {
+      this.pauseVideo()
+      this.running = false
     },
     nextRace: function() {
       if (this.currentRace < this.races.length - 1) {
@@ -425,6 +433,9 @@ export default {
     }),
     this.socket.on("testVideoFrom", () => {
       this._testVideoFrom()
+    }),
+    this.socket.on("stopTest", () => {
+      this._stopTest()
     }),
 
     this.socket.on("setRace", (data) => {
