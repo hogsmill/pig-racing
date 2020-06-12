@@ -287,7 +287,7 @@ export default {
       this.running = true
     },
     _testVideoFrom: function() {
-      this.setVideoTime(6000)
+      this.setVideoTime(3000)
       this.playVideo()
       this.running = true
     },
