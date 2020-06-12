@@ -2,14 +2,14 @@
   <div id="app" class="mb-4">
     <h1>Pig Racing</h1>
     <div v-if="host" :class="{hidden : running }" class="current-race">
-    <button class="btn btn-primary btn-sm" @click="testVideo()">Test Play Video</button>
-    <button class="btn btn-primary btn-sm" @click="testVideoFrom()">Test Play Video From</button>
+    <button class="btn btn-warning btn-sm" @click="testVideo()">Test Play Video</button>
+    <button class="btn btn-warning btn-sm" @click="testVideoFrom()">Test Play Video From</button>
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
     </div>
     <div class="container">
       <div :class="{hidden : !running }" class="video">
         <div v-if="host" class="controls">
-          <button class="btn btn-primary btn-sm" @click="stopTest()">Stop Test</button>
+          <button class="btn btn-warning btn-sm" @click="stopTest()">Stop Test</button>
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">Play</button>
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">Pause</button>
           <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
