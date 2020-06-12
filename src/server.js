@@ -32,6 +32,8 @@ io.on("connection", (socket) => {
     connectDebugOff || console.log(`User with socket id ${socket.id} has disconnected. (${connections} connections)`)
   })
 
+  socket.on("testVideo", (data) => { emit("testVideo", data) })
+
   socket.on("setRace", (data) => { emit("setRace", data) })
 
   socket.on("bet", (data) => { emit("bet", data) })

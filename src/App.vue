@@ -1,12 +1,13 @@
 <template>
   <div id="app" class="mb-4">
     <h1>Pig Racing</h1>
-    <div v-if="admin" :class="{hidden : running }" class="current-race">
+    <div v-if="host" :class="{hidden : running }" class="current-race">
+      <button class="btn btn-primary btn-sm" @click="testVideo()">Test Video</button>
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
     </div>
     <div class="container">
       <div :class="{hidden : !running }" class="video">
-        <div v-if="admin" class="controls">
+        <div v-if="host" class="controls">
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">Play</button>
           <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">Pause</button>
           <button class="btn btn-primary btn-sm" @click="backToBetting()">Back to Betting</button>
@@ -20,7 +21,7 @@
             <div class="race" :class="{ current : currentRace == raceIndex }">
               <div class="race-name">
                 <div class="race-name-name">{{race['name']}}</div>
-                <div v-if="admin && currentRace == raceIndex && !race['hasRun']" class="places">
+                <div v-if="host && currentRace == raceIndex && !race['hasRun']" class="places">
                   <button v-if="!race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="showPigs()">Place Bets</button>
                   <button v-if="race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="runRace()">Run Race</button>
                 </div>
@@ -75,7 +76,7 @@ export default {
   components: {},
   data() {
     return {
-      admin: false,
+      host: false,
       currentRace: -1,
       running: false,
       playing: false,
@@ -268,6 +269,15 @@ export default {
         }
       }
     },
+    testVideo: function() {
+      this.socket.emit("testVideo")
+    },
+    _testVideo: function() {
+      var video = document.getElementById('video')
+      video.src = "./video/TestVideo.mp4"
+      video.load()
+      this.running = true
+    },
     nextRace: function() {
       if (this.currentRace < this.races.length - 1) {
         this.currentRace = this.currentRace + 1
@@ -297,7 +307,7 @@ export default {
       this.calculateWinnings()
     },
     place : function(race, pig, place) {
-      if (this.admin) {
+      if (this.host) {
         this.socket.emit("place", { race: race, pig: pig, place: place })
       }
     },
@@ -398,10 +408,13 @@ export default {
       this.socket = io(connStr)
   },
   mounted() {
-    if (location.search == "?admin") {
-      this.admin = true
+    if (location.search == "?host") {
+      this.host = true
     }
 
+    this.socket.on("testVideo", () => {
+      this._testVideo()
+    }),
     this.socket.on("setRace", (data) => {
       this.currentRace = data['race']
     }),
