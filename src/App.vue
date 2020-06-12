@@ -289,6 +289,7 @@ export default {
     _testVideoFrom: function() {
       this.setVideoTime(6000)
       this.playVideo()
+      this.running = true
     },
     _stopTest: function() {
       this.pauseVideo()
