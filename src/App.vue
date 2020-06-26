@@ -2,9 +2,25 @@
   <div id="app" class="mb-4">
     <h1>Pig Racing</h1>
     <div v-if="host" :class="{hidden : running }" class="current-race">
-    <button class="btn btn-warning btn-sm" @click="testVideo()">Test Play Video</button>
-    <button class="btn btn-warning btn-sm" @click="testVideoFrom()">Test Play Video From</button>
+      <button class="btn btn-warning btn-sm" @click="testVideo()">Test Play Video</button>
+      <button class="btn btn-warning btn-sm" @click="testVideoFrom()">Test Play Video From</button>
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
+    </div>
+    <div class="name-select">Player 1:
+      <select id="name-select-1" class="form-control" v-if="!name1" v-model="name1">
+        <option v-for="(punter, index) in punters" :key="index">{{punter.name}}</option>
+      </select>
+      <span v-if="name1"><strong>{{name1}}</strong></span>
+      <button  v-if="name1" class="btn btn-light btn-sm" @click="function() { name1 = ''}">
+        Clear
+      </button>
+    </div>
+    <div class="name-select">Player 2:
+      <select id="name-select-2" class="form-control" v-if="!name2" v-model="name2">
+        <option v-for="(punter, index) in punters" :key="index">{{punter.name}}</option>
+      </select>
+      <span v-if="name2"><strong>{{name2}}</strong></span>
+      <button  v-if="name2" class="btn btn-light btn-sm" @click="function() { name2 = ''}"> Clear</button>
     </div>
     <div class="container">
       <div :class="{hidden : !running }" class="video">
@@ -42,7 +58,8 @@
                 </tr>
                 <tr v-for="(pig, pigIndex) in race['pigs']" :key="pigIndex">
                   <td v-for="(pigPunter, pigPunterIndex) in punters" :key="pigPunterIndex">
-                    <img @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter['name'])" class="avatar" />
+                    <img v-if="pigPunter['name'] == name1 || pigPunter['name'] == name2" @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter['name'])" class="avatar" />
+                    <span class="punter-span" v-if="pigPunter['name'] == name1 || pigPunter['name'] == name2">{{pigPunter['name']}}</span>
                   </td>
                   <td :class="{ gold: pig['place'] == 1 }" @click="place(race, pig, 1)">1</td>
                   <td :class="{ silver: pig['place'] == 2 }" @click="place(race, pig, 2)">2</td>
@@ -251,7 +268,9 @@ export default {
         { name: "Tony", avatar: "T", winnings: 0 },
         { name: "Jo Anne", avatar: "J", winnings: 0 },
         { name: "Rick", avatar: "R", winnings: 0 }
-      ]
+      ],
+      name1: '',
+      name2: ''
     }
   },
   methods: {
@@ -493,7 +512,9 @@ export default {
   div { vertical-align: top; }
 
   .hidden { visibility: hidden; height: 0; }
+  .name-select { text-align: right; height: 44px; padding-right: 6px; display: inline-block; }
 
+  .name-select select { width: 100px; display: inline; }
   .current-race { padding: 6px; }
   .races { width: 48%; display: inline-block; }
   .race { padding-bottom: 6px; }
@@ -512,7 +533,8 @@ export default {
 
   .winnings { width: 48%; display: inline-block; margin-right: 0; }
   .punter { width: 15%; display: inline-block; margin: 6px 0; }
-  .avatar { width: 20px; height: 20px; }
+  .avatar { width: 20px; height: 20px; margin-right: 2px; }
+  .punter-span { margin-right: 6px; }
   .punter-winnings { width: 80%; display: inline-block; margin: 6px 0; }
   .total { background-color: green; color: #fff; }
 
