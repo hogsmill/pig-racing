@@ -6,16 +6,10 @@
         <button v-if="!race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="showPigs()">Place Bets</button>
         <button v-if="race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="runRace()">Run Race</button>
       </div>
-      <div v-if="race['hasRun']" class="places">
-        <span class="place"><img src="../../assets/img/1st.png" /> {{getPlace(race, 1)}}</span>
-        <span class="place"><img src="../../assets/img/2nd.png" /> {{getPlace(race, 2)}}</span>
-        <span class="place"><img src="../../assets/img/3rd.png" /> {{getPlace(race, 3)}}</span>
-      </div>
     </div>
     <table v-if="raceIndex == currentRace">
       <tr>
         <td colspan="6"></td>
-        <td colspan="3">Places</td>
         <td></td>
         <td colspan="6"><div class="bet-header">Bets</div></td>
       </tr>
@@ -24,13 +18,17 @@
           <img v-if="isPlayer(pigPunter['name'])" @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter['name'])" class="avatar" />
           <span class="punter-span" v-if="isPlayer(pigPunter['name'])">{{pigPunter['name']}}</span>
         </td>
-        <td :class="{ gold: pig['place'] == 1 }" @click="place(race, pig, 1)">1</td>
-        <td :class="{ silver: pig['place'] == 2 }" @click="place(race, pig, 2)">2</td>
-        <td :class="{ bronze: pig['place'] == 3 }" @click="place(race, pig, 3)">3</td>
-        <td>{{pig['name']}}</td>
-        <td v-for="(bet, betIndex) in pig['bets']" :key="'Bet-' + betIndex">
+        <td :class="getPigPlace(pig)" class="rounded-left">
+          <span v-if="getPigPlace(pig) == 'gold'"><img class="medal" src="../../assets/img/1st.png" /></span>
+          <span v-if="getPigPlace(pig) == 'silver'"><img class="medal" src="../../assets/img/2nd.png" /></span>
+          <span v-if="getPigPlace(pig) == 'bronze'"><img class="medal" src="../../assets/img/3rd.png" /></span>
+          <span v-if="getPigPlace(pig) == 'tin'"><img class="medal" src="../../assets/img/4th.png" /></span>
+          {{pig['name']}}
+        </td>
+        <td :class="getPigPlace(pig)" v-for="(bet, betIndex) in pig['bets']" :key="'Bet-' + betIndex">
           <img v-bind:src="getAvatar(bet)" class="avatar" />
         </td>
+        <td :class="getPigPlace(pig)" class="rounded-right"></td>
       </tr>
     </table>
   </div>
@@ -52,6 +50,18 @@ export default {
     },
     getAvatar(name) {
       return require("../../assets/img/" + name.toLowerCase() + ".jpg")
+    },
+    getPigPlace(pig) {
+      if (!this.race.hasRun) {
+        return ''
+      } else {
+        switch(pig.place) {
+          case 1: return 'gold'
+          case 2: return 'silver'
+          case 3: return 'bronze'
+          case 4: return 'tin'
+        }
+      }
     },
     getPlace(race, n) {
       for (var i = 0; i < race['pigs'].length; i++) {
@@ -108,12 +118,15 @@ export default {
         if (name == punter['name']) {
           switch(place) {
             case 1:
-              punter['winnings'] = punter['winnings'] + 5
+              punter['winnings'] = punter['winnings'] + 10
               break
             case 2:
-              punter['winnings'] = punter['winnings'] + 3
+              punter['winnings'] = punter['winnings'] + 6
               break
             case 3:
+              punter['winnings'] = punter['winnings'] + 3
+              break
+            case 4:
               punter['winnings'] = punter['winnings'] + 1
               break
             default:
@@ -146,6 +159,10 @@ export default {
     },
     runRace: function() {
       this.socket.emit("runRace")
+    },
+    pauseVideo: function() {
+      video.pauseVideo()
+      this.$store.dispatch("updateWatchingBetting", "delete")
     }
   },
   computed: {
@@ -189,9 +206,10 @@ export default {
       video.loadVideo(this.races[this.currentRace])
       video.playVideo()
       this.$store.dispatch("updatePlaying", true)
+      this.$store.dispatch("updateWatchingBetting", "add")
+      setTimeout(this.pauseVideo, 110000)
     })
     this.socket.on("backToBetting", () => {
-      video.pauseVideo()
       this.$store.dispatch("updateRunning", false)
     })
     this.socket.on("runRace", () => {
@@ -211,3 +229,11 @@ export default {
   }
 }
 </script>
+
+<style>
+  .medal { height: 20px; width: 20px; }
+  .gold { color: #fff; background-color: goldenrod; }
+  .silver { color: #444; background-color: #ddd; }
+  .bronze { color: #fff; background-color: saddlebrown; }
+  .tin { color: #fff; background-color: green; }
+</style>

@@ -9,6 +9,8 @@
 
     <Players />
 
+    <div v-if="host">Watching Betting: {{watchingBetting}}</div>
+
     <div class="container">
       <div :class="{hidden : !running }" class="video">
         <div v-if="host" class="controls">
@@ -44,12 +46,6 @@ export default {
     Players,
     Races,
     Winnings
-  },
-  data() {
-    return {
-      name1: '',
-      name2: ''
-    }
   },
   methods: {
     playPause: function() {
@@ -98,6 +94,9 @@ export default {
   computed: {
     host() {
       return this.$store.getters.getHost;
+    },
+    watchingBetting() {
+      return this.$store.getters.getWatchingBetting;
     },
     currentRace() {
       return this.$store.getters.getCurrentRace;
@@ -172,9 +171,6 @@ export default {
   .race table { width: 100%; }
   .bet-header { width: 150px; }
   .run-race { position: relative; top: -5px; }
-  .gold { border-radius: 6px; color: #fff; background-color: goldenrod; }
-  .silver { border-radius: 6px; color: #fff; background-color: silver; }
-  .bronze { border-radius: 6px; color: #fff; background-color: saddlebrown; }
   .current { margin-bottom: 2px; }
   .places { text-align: right; position: absolute; right: 6px; top: 8px; width: 78%; display: inline; }
   .places span { vertical-align: middle; display: inline; margin: 2px;  }

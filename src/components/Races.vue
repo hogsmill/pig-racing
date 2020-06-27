@@ -1,7 +1,7 @@
 <template>
   <div class="races card-body bg-light mb-6 col-md-6 no-padding-r-l">
     <div v-for="(race, raceIndex) in races" :key="raceIndex">
-      <Race v-bind:race="race" v-bind:raceIndex="raceIndex" />
+      <Race v-if="race.include" v-bind:race="race" v-bind:raceIndex="raceIndex" />
     </div>
   </div>
 </template>
@@ -13,6 +13,9 @@ export default {
   components: {
     Race
   },
+  props: [
+    'socket'
+  ],
   computed: {
     running() {
       return this.$store.getters.getRunning;
