@@ -6,10 +6,10 @@ const os = require('os')
 var prod = os.hostname() == "agilesimulations" ? true : false
 
 var connectDebugOff = prod
-var debugOn = !prod
+var debugOn = true // !prod
 
 var connections = 0
-var maxConnections = 10
+var maxConnections = 100
 
 function emit(event, data) {
   if (debugOn) {
@@ -35,7 +35,7 @@ io.on("connection", (socket) => {
   socket.on("testVideo", (data) => { emit("testVideo", data) })
 
   socket.on("testVideoFrom", (data) => { emit("testVideoFrom", data) })
-  
+
   socket.on("stopTest", (data) => { emit("stopTest", data) })
 
   socket.on("setRace", (data) => { emit("setRace", data) })

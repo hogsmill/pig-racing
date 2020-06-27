@@ -6,22 +6,9 @@
       <button class="btn btn-warning btn-sm" @click="testVideoFrom()">Test Play Video From</button>
       <button class="btn btn-primary btn-sm" @click="nextRace()">Next Race</button>
     </div>
-    <div class="name-select">Player 1:
-      <select id="name-select-1" class="form-control" v-if="!name1" v-model="name1">
-        <option v-for="(punter, index) in punters" :key="index">{{punter.name}}</option>
-      </select>
-      <span v-if="name1"><strong>{{name1}}</strong></span>
-      <button  v-if="name1" class="btn btn-light btn-sm" @click="function() { name1 = ''}">
-        Clear
-      </button>
-    </div>
-    <div class="name-select">Player 2:
-      <select id="name-select-2" class="form-control" v-if="!name2" v-model="name2">
-        <option v-for="(punter, index) in punters" :key="index">{{punter.name}}</option>
-      </select>
-      <span v-if="name2"><strong>{{name2}}</strong></span>
-      <button  v-if="name2" class="btn btn-light btn-sm" @click="function() { name2 = ''}"> Clear</button>
-    </div>
+
+    <Players />
+
     <div class="container">
       <div :class="{hidden : !running }" class="video">
         <div v-if="host" class="controls">
@@ -33,55 +20,10 @@
         </div>
         <video id="video" width="70%" controls><source src="" type="video/mp4"></video>
       </div>
+
       <div :class="{hidden : running }" class="card-deck">
-        <div class="races card-body bg-light mb-6 col-md-6 no-padding-r-l">
-          <div v-for="(race, raceIndex) in races" :key="raceIndex">
-            <div class="race" :class="{ current : currentRace == raceIndex }">
-              <div class="race-name">
-                <div class="race-name-name">{{race['name']}}</div>
-                <div v-if="host && currentRace == raceIndex && !race['hasRun']" class="places">
-                  <button v-if="!race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="showPigs()">Place Bets</button>
-                  <button v-if="race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="runRace()">Run Race</button>
-                </div>
-                <div v-if="race['hasRun']" class="places">
-                  <span class="place"><img src="../src/assets/img/1st.png" /> {{getPlace(race, 1)}}</span>
-                  <span class="place"><img src="../src/assets/img/2nd.png" /> {{getPlace(race, 2)}}</span>
-                  <span class="place"><img src="../src/assets/img/3rd.png" /> {{getPlace(race, 3)}}</span>
-                </div>
-              </div>
-              <table v-if="raceIndex == currentRace">
-                <tr>
-                  <td colspan="6"></td>
-                  <td colspan="3">Places</td>
-                  <td></td>
-                  <td colspan="6"><div class="bet-header">Bets</div></td>
-                </tr>
-                <tr v-for="(pig, pigIndex) in race['pigs']" :key="pigIndex">
-                  <td v-for="(pigPunter, pigPunterIndex) in punters" :key="pigPunterIndex">
-                    <img v-if="pigPunter['name'] == name1 || pigPunter['name'] == name2" @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter['name'])" class="avatar" />
-                    <span class="punter-span" v-if="pigPunter['name'] == name1 || pigPunter['name'] == name2">{{pigPunter['name']}}</span>
-                  </td>
-                  <td :class="{ gold: pig['place'] == 1 }" @click="place(race, pig, 1)">1</td>
-                  <td :class="{ silver: pig['place'] == 2 }" @click="place(race, pig, 2)">2</td>
-                  <td :class="{ bronze: pig['place'] == 3 }" @click="place(race, pig, 3)">3</td>
-                  <td>{{pig['name']}}</td>
-                  <td v-for="(bet, betIndex) in pig['bets']" :key="'Bet-' + betIndex">
-                    <img v-bind:src="getAvatar(bet)" class="avatar" />
-                  </td>
-                </tr>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="winnings card bg-light mb-6 col-md-6 no-padding-r-l">
-          <h2 class="card-title">Winnings</h2>
-            <div v-for="(punter, winningsIndex) in punters" :key="winningsIndex">
-            <div class="punter">{{punter['name']}}</div>
-            <div class="punter-winnings">
-              <div class="total" :style="{ width: getWidth(punter['winnings']) }">{{punter['winnings']}}</div>
-            </div>
-          </div>
-        </div>
+        <Races />
+        <Winnings />
       </div>
     </div>
   </div>
@@ -90,185 +32,21 @@
 <script>
 import io from "socket.io-client";
 
+import video from './behaviour/video.js'
+
+import Players from "./components/Players.vue";
+import Races from "./components/Races.vue";
+import Winnings from "./components/Winnings.vue";
+
 export default {
   name: 'App',
-  components: {},
+  components: {
+    Players,
+    Races,
+    Winnings
+  },
   data() {
     return {
-      host: false,
-      currentRace: -1,
-      running: false,
-      playing: false,
-      races: [
-        {
-          name: "Race One",
-          pigsShown: false,
-          hasRun: false,
-          video: 'VTS_01_1.mp4',
-          pigs: [
-            { name: "Perky", bets: [], place: 0 },
-            { name: "Babe", bets: [], place: 0 },
-            { name: "Curly", bets: [], place: 0 },
-            { name: "Pinky", bets: [], place: 0 },
-            { name: "Chops", bets: [], place: 0 },
-            { name: "Cheeky", bets: [], place: 0 },
-            { name: "Pygmy", bets: [], place: 0 },
-            { name: "Tom Trotter", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Two",
-          pigsShown: false,
-          hasRun: false,
-          video: 'VTS_02_1.mp4',
-          pigs: [
-            { name: "Streaky Bob", bets: [], place: 0 },
-            { name: "Bursting To Go", bets: [], place: 0 },
-            { name: "Muck For Luck", bets: [], place: 0 },
-            { name: "Big Willy", bets: [], place: 0 },
-            { name: "Lester Piglet", bets: [], place: 0 },
-            { name: "Hog Wart", bets: [], place: 0 },
-            { name: "Mr Swilly", bets: [], place: 0 },
-            { name: "Smell Your Mam", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Three",
-          pigsShown: false,
-          hasRun: false,
-          video: 'VTS_03_1.mp4',
-          pigs: [
-            { name: "Jake The Pig", bets: [], place: 0 },
-            { name: "Danish Delight", bets: [], place: 0 },
-            { name: "Odour Eater", bets: [], place: 0 },
-            { name: "Super Stud", bets: [], place: 0 },
-            { name: "Wind Breaker", bets: [], place: 0 },
-            { name: "Pie In The Sky", bets: [], place: 0 },
-            { name: "Pig'n About", bets: [], place: 0 },
-            { name: "Ugly Chops", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Four",
-          pigsShown: false,
-          hasRun: false,
-          video: 'VTS_04_1.mp4',
-          pigs: [
-            { name: "Pig Tail", bets: [], place: 0 },
-            { name: "Piggy Back", bets: [], place: 0 },
-            { name: "Special Offer", bets: [], place: 0 },
-            { name: "Smokey Joe", bets: [], place: 0 },
-            { name: "Nyree Dawn Porker", bets: [], place: 0 },
-            { name: "Douglas Hog", bets: [], place: 0 },
-            { name: "Sunday Special", bets: [], place: 0 },
-            { name: "Jobby", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Five",
-          pigsShown: false,
-          hasRun: false,
-          video: 'VTS_05_1.mp4',
-          pigs: [
-            { name: "Apple Sauce", bets: [], place: 0 },
-            { name: "Rocky", bets: [], place: 0 },
-            { name: "The Flying Pig", bets: [], place: 0 },
-            { name: "Skoda", bets: [], place: 0 },
-            { name: "Shih Tzu", bets: [], place: 0 },
-            { name: "Porcupine", bets: [], place: 0 },
-            { name: "Super Stud", bets: [], place: 0 },
-            { name: "Double Blank", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Six",
-          pigsShown: false,
-          hasRun: false,
-          video: 'VTS_06_1.mp4',
-          pigs: [
-            { name: "Stew Pot", bets: [], place: 0 },
-            { name: "Walters Plodder", bets: [], place: 0 },
-            { name: "Hog Wash", bets: [], place: 0 },
-            { name: "Miss Piggy", bets: [], place: 0 },
-            { name: "Snorter", bets: [], place: 0 },
-            { name: "Piggy Malone", bets: [], place: 0 },
-            { name: "Lester Piglet", bets: [], place: 0 },
-            { name: "Lynford Crispy Bacon", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Seven",
-          pigsShown: false,
-          hasRun: false,
-          video: 'Race SEVEN.mp4',
-          pigs: [
-            { name: "Air Fungus", bets: [], place: 0 },
-            { name: "Duty Free", bets: [], place: 0 },
-            { name: "Flying Officer Kite", bets: [], place: 0 },
-            { name: "Free Insurance", bets: [], place: 0 },
-            { name: "Never On Time", bets: [], place: 0 },
-            { name: "Full Board", bets: [], place: 0 },
-            { name: "Not Quite Finished", bets: [], place: 0 },
-            { name: "Trolley Dolley", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Eight",
-          pigsShown: false,
-          hasRun: false,
-          video: 'Race EIGHT.mp4',
-          pigs: [
-            { name: "Rasher Dasher", bets: [], place: 0 },
-            { name: "Shortts Snorter", bets: [], place: 0 },
-            { name: "Tony's Trotter", bets: [], place: 0 },
-            { name: "Pork Scratchings", bets: [], place: 0 },
-            { name: "Trotsky", bets: [], place: 0 },
-            { name: "Squealer", bets: [], place: 0 },
-            { name: "Kelly's Porker", bets: [], place: 0 },
-            { name: "Smokey Bacon", bets: [], place: 0 },
-          ]
-        },
-        {
-          name: "Race Nine",
-          pigsShown: false,
-          hasRun: false,
-          video: 'Race NINE.mp4',
-          pigs: [
-            { name: "Domestos", bets: [], place: 0 },
-            { name: "Oprah", bets: [], place: 0 },
-            { name: "Lost In France", bets: [], place: 0 },
-            { name: "Angus Mi Coat Up", bets: [], place: 0 },
-            { name: "U Want Fork", bets: [], place: 0 },
-            { name: "Nice One Cyril", bets: [], place: 0 },
-            { name: "Nyrene Dawn Porker", bets: [], place: 0 },
-            { name: "Reebok", bets: [], place: 0 }
-          ]
-        },
-        {
-          name: "Race Ten",
-          pigsShown: false,
-          hasRun: false,
-          video: 'Race TEN.mp4',
-          pigs: [
-            { name: "Lady Godiva", bets: [], place: 0 },
-            { name: "Wind Breaker", bets: [], place: 0 },
-            { name: "Big Ben", bets: [], place: 0 },
-            { name: "Dole Money", bets: [], place: 0 },
-            { name: "Domino King", bets: [], place: 0 },
-            { name: "Carling Darling", bets: [], place: 0 },
-            { name: "Cook The Books", bets: [], place: 0 },
-            { name: "Pile On The Track", bets: [], place: 0 }
-          ]
-        }
-      ],
-      punters: [
-        { name: "Steve", avatar: "S", winnings: 0 },
-        { name: "Fiona", avatar: "F", winnings: 0 },
-        { name: "Chris", avatar: "C", winnings: 0 },
-        { name: "Tony", avatar: "T", winnings: 0 },
-        { name: "Jo Anne", avatar: "J", winnings: 0 },
-        { name: "Rick", avatar: "R", winnings: 0 }
-      ],
       name1: '',
       name2: ''
     }
@@ -276,19 +54,6 @@ export default {
   methods: {
     playPause: function() {
       this.socket.emit("playPause")
-    },
-    getWidth(n) {
-      return n / this.races.length * 10 + '%'
-    },
-    getAvatar(name) {
-      return require("./assets/img/" + name.toLowerCase() + ".jpg")
-    },
-    getPlace(race, n) {
-      for (var i = 0; i < race['pigs'].length; i++) {
-        if (race['pigs'][i]['place'] == n) {
-          return race['pigs'][i]['name']
-        }
-      }
     },
     testVideo: function() {
       this.socket.emit("testVideo")
@@ -300,138 +65,54 @@ export default {
       this.socket.emit("stopTest")
     },
     _testVideo: function() {
-      var video = document.getElementById('video')
-      video.src = "./video/TestVideo.mp4"
-      video.load()
-      this.running = true
+      video.setTestVideo()
+      this.$store.dispatch("updateRunning", true)
     },
     _testVideoFrom: function() {
-      this.setVideoTime(30)
-      this.playVideo()
-      this.running = true
+      video.setVideoTime(30)
+      video.playVideo()
+      this.$store.dispatch("updateRunning", true)
     },
     _stopTest: function() {
-      this.pauseVideo()
-      this.running = false
+      video.pauseVideo()
+      this.$store.dispatch("updateRunning", false)
     },
     nextRace: function() {
+      var currentRace
       if (this.currentRace < this.races.length - 1) {
-        this.currentRace = this.currentRace + 1
+        currentRace = this.currentRace + 1
       } else {
-        this.currentRace = -1
+        currentRace = -1
       }
-      this.socket.emit("setRace", { race: this.currentRace })
-    },
-    betOn: function(pig, punter) {
-      this.socket.emit("bet", { pig: pig, punter: punter })
-    },
-    _betOn: function(pig, punter) {
-      var pigs = this.races[this.currentRace]['pigs']
-      for (var j = 0; j < pigs.length; j++) {
-        var racePig = pigs[j]
-        if (racePig['name'] == pig['name']) {
-          pig = racePig
-        }
-        for (var k = 0; k < racePig['bets'].length; k++) {
-          var bet = racePig['bets'][k]
-          if (bet == punter['name']) {
-            racePig['bets'].splice(k, 1)
-          }
-        }
-      }
-      pig['bets'].push(punter['name'])
-      this.calculateWinnings()
-    },
-    place : function(race, pig, place) {
-      if (this.host) {
-        this.socket.emit("place", { race: race, pig: pig, place: place })
-      }
-    },
-    _place: function(race, pig, place) {
-      for (var i = 0; i < this.races.length; i++) {
-        if (this.races[i]['name'] == race['name']) {
-          race = this.races[i]
-        }
-      }
-      for (i = 0; i < race['pigs'].length; i++) {
-        if (race['pigs'][i]['name'] == pig['name']) {
-          pig = race['pigs'][i]
-        }
-        if (race['pigs'][i]['place'] == place) {
-          race['pigs'][i]['place'] = 0
-        }
-      }
-      pig['place'] = place
-      this.calculateWinnings()
-    },
-    addWinnings: function(name, place) {
-      for (var i = 0; i < this.punters.length; i++) {
-        var punter = this.punters[i]
-        if (name == punter['name']) {
-          switch(place) {
-            case 1:
-              punter['winnings'] = punter['winnings'] + 5
-              break
-            case 2:
-              punter['winnings'] = punter['winnings'] + 3
-              break
-            case 3:
-              punter['winnings'] = punter['winnings'] + 1
-              break
-            default:
-              console.log('unknown place')
-          }
-        }
-      }
-    },
-    calculateRaceWinnings(race) {
-      for (var i = 0; i < race['pigs'].length; i++) {
-        var pig = race['pigs'][i]
-        if (pig['place'] > 0) {
-          for (var j = 0; j < pig['bets'].length; j++) {
-            this.addWinnings(pig['bets'][j], pig['place'])
-          }
-        }
-      }
-    },
-    calculateWinnings: function() {
-      for (var i = 0; i < this.punters.length; i++) {
-        this.punters[i]['winnings'] = 0
-      }
-      for (i = 0; i < this.races.length; i++) {
-        var race = this.races[i]
-        this.calculateRaceWinnings(race)
-      }
-    },
-    showPigs: function() {
-      this.socket.emit("showPigs")
-    },
-    runRace: function() {
-      this.socket.emit("runRace")
+      this.$store.dispatch("updateCurrentRace", currentRace)
+      this.socket.emit("setRace", { race: currentRace })
     },
     backToBetting: function() {
       this.socket.emit("backToBetting", {})
-      this.races[this.currentRace]['pigsShown'] = true
+      this.$store.dispatch("updatePigsHaveBeenShown", this.currentRace)
     },
     finish: function() {
       this.socket.emit("finish", {})
+    }
+  },
+  computed: {
+    host() {
+      return this.$store.getters.getHost;
     },
-    loadVideo: function() {
-      var video = document.getElementById('video')
-      video.src = "./video/" + this.races[this.currentRace]['video']
-      video.load()
+    currentRace() {
+      return this.$store.getters.getCurrentRace;
     },
-    setVideoTime: function(t) {
-      var video = document.getElementById('video')
-      video.currentTime = t
+    running() {
+      return this.$store.getters.getRunning;
     },
-    playVideo: function() {
-      var video = document.getElementById('video')
-      video.play()
+    playing() {
+      return this.$store.getters.getPlaying;
     },
-    pauseVideo: function() {
-      var video = document.getElementById('video')
-      video.pause()
+    races() {
+      return this.$store.getters.getRaces;
+    },
+    punters() {
+      return this.$store.getters.getPunters;
     }
   },
   created() {
@@ -445,61 +126,31 @@ export default {
   },
   mounted() {
     if (location.search == "?host") {
-      this.host = true
+      this.$store.dispatch("updateHost", true)
     }
 
     this.socket.on("testVideo", () => {
       this._testVideo()
-    }),
+    })
     this.socket.on("testVideoFrom", () => {
       this._testVideoFrom()
-    }),
+    })
     this.socket.on("stopTest", () => {
       this._stopTest()
-    }),
+    })
 
     this.socket.on("setRace", (data) => {
-      this.currentRace = data['race']
-    }),
-    this.socket.on("bet", (data) => {
-      this._betOn(data['pig'], data['punter'])
-    }),
-    this.socket.on("place", (data) => {
-      this._place(data['race'], data['pig'], data['place'])
-    }),
-    this.socket.on("showPigs", () => {
-      this.running = true
-      this.loadVideo()
-      this.playVideo()
-      this.playing = true
-    }),
-    this.socket.on("backToBetting", () => {
-      this.pauseVideo()
-      this.running = false
-    }),
-    this.socket.on("runRace", () => {
-      this.running = true
-      this.setVideoTime(110)
-      this.playVideo()
-      this.playing = false
-    }),
+      this.$store.dispatch("updateCurrentRace", data['race'])
+    })
     this.socket.on("playPause", () => {
       var video = document.getElementById("video")
       if (video.paused) {
         video.play()
-        this.playing = true
+        this.$store.dispatch("updatePlaying", true)
       } else {
         video.pause()
-        this.playing = false
+        this.$store.dispatch("updatePlaying", false)
       }
-    })
-    this.socket.on("backToBetting", () => {
-      this.running = false
-    }),
-    this.socket.on("finish", () => {
-      this.running = false
-      this.pauseVideo()
-      this.races[this.currentRace]['hasRun'] = true
     })
   }
 }
@@ -512,9 +163,7 @@ export default {
   div { vertical-align: top; }
 
   .hidden { visibility: hidden; height: 0; }
-  .name-select { text-align: right; height: 44px; padding-right: 6px; display: inline-block; }
 
-  .name-select select { width: 100px; display: inline; }
   .current-race { padding: 6px; }
   .races { width: 48%; display: inline-block; }
   .race { padding-bottom: 6px; }
