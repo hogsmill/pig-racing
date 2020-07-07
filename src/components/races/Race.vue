@@ -48,7 +48,9 @@ export default {
   ],
   methods: {
     isPlayer(player) {
-      return player.group == "Footy" || player.name == this.player1 || player.name == this.player2 || player.name == this.player3
+      var group = player.group == "Footy"
+      var isAPlayer = player.name == this.player1 || player.name == this.player2 || player.name == this.player3
+      return group && isAPlayer
     },
     getAvatar(name) {
       try {
