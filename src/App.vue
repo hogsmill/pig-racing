@@ -93,7 +93,7 @@ export default {
   },
   computed: {
     host() {
-      return this.$store.getters.getHost;
+      return this.$store.getters.getHost
     },
     watchingBetting() {
       return this.$store.getters.getWatchingBetting;

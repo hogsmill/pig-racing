@@ -13,13 +13,43 @@ export const store = new Vuex.Store({
     player1: '',
     player2: '',
     player3: '',
+    punterGroup: 'Footy',
+    avatarType: 'initials',
     punters: [
-      { name: "Steve", avatar: "S", winnings: 0 },
-      { name: "Fiona", avatar: "F", winnings: 0 },
-      { name: "Chris", avatar: "C", winnings: 0 },
-      { name: "Tony", avatar: "T", winnings: 0 },
-      { name: "Jo Anne", avatar: "J", winnings: 0 },
-      { name: "Rick", avatar: "R", winnings: 0 }
+
+      { name: "Steve", avatar: "S", winnings: 0, group: 'Wellses' },
+      { name: "Fiona", avatar: "F", winnings: 0, group: 'Wellses' },
+      { name: "Chris", avatar: "C", winnings: 0, group: 'Wellses' },
+      { name: "Tony", avatar: "T", winnings: 0, group: 'Wellses' },
+      { name: "Jo Anne", avatar: "J", winnings: 0, group: 'Wellses' },
+      { name: "Rick", avatar: "R", winnings: 0, group: 'Wellses' },
+
+      { name: "Greg", initials: "GC", winnings: 0, group: 'Footy' },
+      { name: "Gaffer", initials: "MH", winnings: 0, group: 'Footy' },
+      { name: "Steve Archer", initials: "SA", winnings: 0, group: 'Footy' },
+      { name: "Adrian Maher", initials: "AM", winnings: 0, group: 'Footy' },
+      { name: "Richard Hodgson", initials: "RH", winnings: 0, group: 'Footy' },
+      { name: "Andy Keaney", initials: "AK", winnings: 0, group: 'Footy' },
+      { name: "Dave Wood", initials: "DW", winnings: 0, group: 'Footy' },
+      { name: "Jo Wood", initials: "JW", winnings: 0, group: 'Footy' },
+      { name: "Nick Williams", initials: "NW", winnings: 0, group: 'Footy' },
+      { name: "Brendon Richards", initials: "BR", winnings: 0, group: 'Footy' },
+      { name: "Kevin Murphy", initials: "KM", winnings: 0, group: 'Footy' },
+      { name: "Darrell", initials: "D", winnings: 0, group: 'Footy' },
+      { name: "Dave Peel", initials: "DP", winnings: 0, group: 'Footy' },
+      { name: "Dave Edwards", initials: "DW", winnings: 0, group: 'Footy' },
+      { name: "Triston", initials: "T", winnings: 0, group: 'Footy' },
+      { name: "Lloyd Cook", initials: "LC", winnings: 0, group: 'Footy' },
+      { name: "Henry Rayner", initials: "HR", winnings: 0, group: 'Footy' },
+      { name: "Iain Clarke", initials: "IC", winnings: 0, group: 'Footy' },
+
+      { name: "Guest One", initials: "G1", winnings: 0, group: 'Footy' },
+      { name: "Guest Two", initials: "G2", winnings: 0, group: 'Footy' },
+      { name: "Guest Three", initials: "G3", winnings: 0, group: 'Footy' },
+      { name: "Guest Four", initials: "G4", winnings: 0, group: 'Footy' },
+      { name: "Guest Five", initials: "G5", winnings: 0, group: 'Footy' },
+
+
     ],
     races: [
       {
@@ -219,8 +249,14 @@ export const store = new Vuex.Store({
     getPlayer3: (state) => {
       return state.player3;
     },
+    getPunterGroup: (state) => {
+      return state.punterGroup;
+    },
     getPunters: (state) => {
-      return state.punters;
+      return state.punters.sort((a, b) => (a.name > b.name) ? 1 : -1)
+    },
+    getSortedPunters: (state) => {
+      return state.punters.sort((a, b) => (b.winnings > a.winnings) ? 1 : -1)
     },
     getRaces: (state) => {
       return state.races;

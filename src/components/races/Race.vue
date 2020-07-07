@@ -15,8 +15,9 @@
       </tr>
       <tr v-for="(pig, pigIndex) in race['pigs']" :key="pigIndex">
         <td v-for="(pigPunter, pigPunterIndex) in punters" :key="pigPunterIndex">
-          <img v-if="isPlayer(pigPunter['name'])" @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter['name'])" class="avatar" />
-          <span class="punter-span" v-if="isPlayer(pigPunter['name'])">{{pigPunter['name']}}</span>
+          <img v-if="!pigPunter.initials && isPlayer(pigPunter)" @click="betOn(pig, pigPunter)" v-bind:src="getAvatar(pigPunter.name)" class="avatar" />
+          <div v-if="pigPunter.initials && isPlayer(pigPunter)" @click="betOn(pig, pigPunter)" class="rounded-circle initials">{{pigPunter.initials}}</div>
+          <span class="punter-span" v-if="!pigPunter.initials && isPlayer(pigPunter)" @click="betOn(pig, pigPunter)">{{pigPunter['name']}}</span>
         </td>
         <td :class="getPigPlace(pig)" class="rounded-left">
           <span v-if="getPigPlace(pig) == 'gold'"><img class="medal" src="../../assets/img/1st.png" /></span>
@@ -26,7 +27,8 @@
           {{pig['name']}}
         </td>
         <td :class="getPigPlace(pig)" v-for="(bet, betIndex) in pig['bets']" :key="'Bet-' + betIndex">
-          <img v-bind:src="getAvatar(bet)" class="avatar" />
+          <img v-if="!bet.initials" v-bind:src="getAvatar(bet.name)" class="avatar" />
+          <div v-if="bet.initials" class="rounded-circle initials">{{bet.initials}}</div>
         </td>
         <td :class="getPigPlace(pig)" class="rounded-right"></td>
       </tr>
@@ -46,10 +48,14 @@ export default {
   ],
   methods: {
     isPlayer(player) {
-      return player == this.player1 || player == this.player2 || player == this.player3
+      return player.group == "Footy" || player.name == this.player1 || player.name == this.player2 || player.name == this.player3
     },
     getAvatar(name) {
-      return require("../../assets/img/" + name.toLowerCase() + ".jpg")
+      try {
+        return require("../../assets/img/" + name.toLowerCase() + ".jpg")
+      } catch(e) {
+        return require("../../assets/img/default.png")
+      }
     },
     getPigPlace(pig) {
       if (!this.race.hasRun) {
@@ -99,35 +105,34 @@ export default {
       var pigs = this.races[this.currentRace]['pigs']
       for (var j = 0; j < pigs.length; j++) {
         var racePig = pigs[j]
-        if (racePig['name'] == pig['name']) {
+        if (racePig.name == pig.name) {
           pig = racePig
         }
-        for (var k = 0; k < racePig['bets'].length; k++) {
-          var bet = racePig['bets'][k]
-          if (bet == punter['name']) {
-            racePig['bets'].splice(k, 1)
+        for (var k = 0; k < racePig.bets.length; k++) {
+          var bet = racePig.bets[k]
+          if (bet.name == punter.name) {
+            racePig.bets.splice(k, 1)
           }
         }
       }
-      pig['bets'].push(punter['name'])
-      this.calculateWinnings()
+      pig.bets.push(punter)
     },
-    addWinnings: function(name, place) {
+    addWinnings: function(bet, place) {
       for (var i = 0; i < this.punters.length; i++) {
         var punter = this.punters[i]
-        if (name == punter['name']) {
+        if (bet.name == punter.name) {
           switch(place) {
             case 1:
-              punter['winnings'] = punter['winnings'] + 10
+              punter.winnings = punter.winnings + 10
               break
             case 2:
-              punter['winnings'] = punter['winnings'] + 6
+              punter.winnings = punter.winnings + 6
               break
             case 3:
-              punter['winnings'] = punter['winnings'] + 3
+              punter.winnings = punter.winnings + 3
               break
             case 4:
-              punter['winnings'] = punter['winnings'] + 1
+              punter.winnings = punter.winnings + 1
               break
             default:
               console.log('unknown place')
@@ -136,18 +141,18 @@ export default {
       }
     },
     calculateRaceWinnings(race) {
-      for (var i = 0; i < race['pigs'].length; i++) {
-        var pig = race['pigs'][i]
-        if (pig['place'] > 0) {
-          for (var j = 0; j < pig['bets'].length; j++) {
-            this.addWinnings(pig['bets'][j], pig['place'])
+      for (var i = 0; i < race.pigs.length; i++) {
+        var pig = race.pigs[i]
+        if (pig.place > 0) {
+          for (var j = 0; j < pig.bets.length; j++) {
+            this.addWinnings(pig.bets[j], pig.place)
           }
         }
       }
     },
     calculateWinnings: function() {
       for (var i = 0; i < this.punters.length; i++) {
-        this.punters[i]['winnings'] = 0
+        this.punters[i].winnings = 0
       }
       for (i = 0; i < this.races.length; i++) {
         var race = this.races[i]
@@ -167,7 +172,7 @@ export default {
   },
   computed: {
     host() {
-      return this.$store.getters.getHost;
+      return this.$store.getters.getHost
     },
     currentRace() {
       return this.$store.getters.getCurrentRace;
@@ -181,8 +186,11 @@ export default {
     player3() {
       return this.$store.getters.getPlayer3;
     },
+    punterGroup() {
+      return this.$store.getters.getPunterGroup;
+    },
     punters() {
-      return this.$store.getters.getPunters;
+      return this.$store.getters.getPunters
     },
     races() {
       return this.$store.getters.getRaces;
@@ -222,6 +230,7 @@ export default {
       this.$store.dispatch("updateRunning", false)
       video.pauseVideo()
       this.$store.dispatch("updateRaceHasRun", this.currentRace)
+      this.calculateWinnings()
     })
     this.socket.on("place", (data) => {
       this._place(data['race'], data['pig'], data['place'])
@@ -231,6 +240,7 @@ export default {
 </script>
 
 <style>
+  .initials { background-color: #ccc; color: #fff; width: 24px; height: 24px; display: inline-block;  font-size: 76%; line-height: 2; }
   .medal { height: 20px; width: 20px; }
   .gold { color: #fff; background-color: goldenrod; }
   .silver { color: #444; background-color: #ddd; }

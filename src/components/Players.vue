@@ -42,7 +42,15 @@ export default {
   },
   computed: {
     punters() {
-      return this.$store.getters.getPunters;
+      var allPunters = this.$store.getters.getPunters
+      var punterGroup = this.$store.getters.getPunterGroup
+      var punters = []
+      for (var i = 0; i < allPunters.length; i++) {
+        if (allPunters[i].group == punterGroup) {
+          punters.push(allPunters[i])
+        }
+      }
+      return punters
     },
     player1() {
       return this.$store.getters.getPlayer1;
