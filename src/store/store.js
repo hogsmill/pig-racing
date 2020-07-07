@@ -47,7 +47,7 @@ export const store = new Vuex.Store({
       { name: "Guest Two", initials: "G2", winnings: 0, group: 'Footy' },
       { name: "Guest Three", initials: "G3", winnings: 0, group: 'Footy' },
       { name: "Guest Four", initials: "G4", winnings: 0, group: 'Footy' },
-      { name: "Guest Five", initials: "G5", winnings: 0, group: 'Footy' },
+      { name: "Guest Five", initials: "G5", winnings: 0, group: 'Footy' }
 
 
     ],
@@ -256,7 +256,8 @@ export const store = new Vuex.Store({
       return state.punters.sort((a, b) => (a.name > b.name) ? 1 : -1)
     },
     getSortedPunters: (state) => {
-      return state.punters.sort((a, b) => (b.winnings > a.winnings) ? 1 : -1)
+      return state.punters
+      //return state.punters.sort((a, b) => (b.winnings >= a.winnings) ? 1 : -1)
     },
     getRaces: (state) => {
       return state.races;
