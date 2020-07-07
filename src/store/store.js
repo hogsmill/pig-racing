@@ -256,8 +256,13 @@ export const store = new Vuex.Store({
       return state.punters.sort((a, b) => (a.name > b.name) ? 1 : -1)
     },
     getSortedPunters: (state) => {
-      return state.punters
-      //return state.punters.sort((a, b) => (b.winnings >= a.winnings) ? 1 : -1)
+      var punters = []
+      for (var i = 0; i < state.punters.length; i++) {
+        if (state.punters[i].winnings > 0) {
+          punters.push(state.punters[i])
+        }
+      }
+      return punters.sort((a, b) => (b.winnings >= a.winnings) ? 1 : -1)
     },
     getRaces: (state) => {
       return state.races;
