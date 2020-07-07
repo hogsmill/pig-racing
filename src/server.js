@@ -6,7 +6,7 @@ const os = require('os')
 var prod = os.hostname() == "agilesimulations" ? true : false
 
 var connectDebugOff = prod
-var debugOn = true // !prod
+var debugOn = !prod
 
 var connections = 0
 var maxConnections = 100
