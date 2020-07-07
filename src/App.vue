@@ -24,7 +24,7 @@
       </div>
 
       <div :class="{hidden : running }" class="card-deck">
-        <Races />
+        <Races v-bind:socket="socket" />
         <Winnings />
       </div>
     </div>

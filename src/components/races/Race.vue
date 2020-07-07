@@ -37,14 +37,13 @@
 </template>
 
 <script>
-import io from "socket.io-client";
-
 import video from '../../behaviour/video.js'
 
 export default {
   props: [
     'raceIndex',
-    'race'
+    'race',
+    'socket'
   ],
   methods: {
     isPlayer(player) {
@@ -198,15 +197,6 @@ export default {
       return this.$store.getters.getRaces;
     }
   },
-  created() {
-    var host = "77.68.122.69"
-      if (location.hostname == 'localhost') {
-        host = 'localhost'
-      }
-      var connStr = "http://" + host + ":3010"
-      console.log("Connecting to: " + connStr)
-      this.socket = io(connStr)
-  },
   mounted() {
     this.socket.on("bet", (data) => {
       this._betOn(data['pig'], data['punter'])
@@ -214,10 +204,13 @@ export default {
     this.socket.on("showPigs", () => {
       this.$store.dispatch("updateRunning", true)
       video.loadVideo(this.races[this.currentRace])
+      if (this.currentRace > 0) {
+        video.setVideoTime(30)
+      }
       video.playVideo()
       this.$store.dispatch("updatePlaying", true)
       this.$store.dispatch("updateWatchingBetting", "add")
-      setTimeout(this.pauseVideo, 110000)
+      video.pauseVideoAt(110)
     })
     this.socket.on("backToBetting", () => {
       this.$store.dispatch("updateRunning", false)
