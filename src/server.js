@@ -1,9 +1,35 @@
+const fs = require('fs')
+const ON_DEATH = require('death')({uncaughtException: true})
+const os = require('os')
+const prod = os.hostname() == 'agilesimulations' ? true : false
+
+const logFile = prod ? process.argv[4] : 'server.log'
+
+let currentAction = ''
+let currentData = ''
+ON_DEATH(function(signal, err) {
+  let logStr = new Date()
+  if (signal) {
+    logStr = logStr + ' ' + signal + '\n'
+  }
+  if (currentAction) {
+    logStr = logStr + '  Action: ' + currentAction + '\n'
+  }
+  if (currentData) {
+    logStr = logStr + '  Data: ' + currentData + '\n'
+  }
+  if (err && err.stack) {
+    logStr = logStr + '  Error: ' + err.stack + '\n'
+  }
+  fs.appendFile(logFile, logStr, function (err) {
+    if (err) console.log(logStr)
+    process.exit()
+  })
+})
+
 const app = require('express')()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
-const os = require('os')
-
-const prod = os.hostname() == 'agilesimulations' ? true : false
 
 const connectDebugOff = prod
 const debugOn = !prod
