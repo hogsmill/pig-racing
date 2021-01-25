@@ -5,6 +5,7 @@ Vue.use(Vuex)
 
 export const store = new Vuex.Store({
   state: {
+    thisGame: 'Pig Racing',
     host: false,
     demo: false,
     demoRaceFinished: false,
@@ -227,6 +228,9 @@ export const store = new Vuex.Store({
     ]
   },
   getters: {
+    thisGame: (state) => {
+      return state.thisGame
+    },
     getHost: (state) => {
       return state.host
     },

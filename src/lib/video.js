@@ -33,6 +33,7 @@ const Video = {
     const video = document.getElementById('video')
     video.addEventListener('timeupdate', timeUpdateFunction)
   }
+
 }
 
 export default Video

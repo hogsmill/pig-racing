@@ -1,11 +1,12 @@
 <template>
   <div id="app" class="mb-4">
+    <Header />
     <h1>
       Pig Racing
-      <span v-if="host">(Host)</span>
+      <span v-if="isHost">(Host)</span>
       <span v-if="demo">(Demo)</span>
     </h1>
-    <div v-if="host" :class="{hidden : running }" class="current-race">
+    <div v-if="isHost" :class="{hidden : running }" class="current-race">
       <button class="btn btn-warning btn-sm" @click="testVideo()">
         Test Play Video
       </button>
@@ -26,13 +27,13 @@
 
     <Players v-if="!demo" />
 
-    <div v-if="host">
+    <div v-if="isHost">
       Watching Betting: {{ watchingBetting }}
     </div>
 
     <div class="container">
       <div :class="{hidden : !running }" class="video">
-        <div v-if="host" class="controls">
+        <div v-if="isHost" class="controls">
           <button class="btn btn-warning btn-sm" @click="stopTest()">
             Stop Test
           </button>
@@ -64,10 +65,10 @@
 
 <script>
 import io from 'socket.io-client'
-
 import params from './lib/params.js'
 import video from './lib/video.js'
 
+import Header from './components/Header.vue'
 import Players from './components/Players.vue'
 import Races from './components/Races.vue'
 import Winnings from './components/Winnings.vue'
@@ -76,13 +77,14 @@ import Demo from './components/Demo.vue'
 export default {
   name: 'App',
   components: {
+    Header,
     Players,
     Races,
     Winnings,
     Demo
   },
   computed: {
-    host() {
+    isHost() {
       return this.$store.getters.getHost
     },
     demo() {

@@ -5,8 +5,8 @@ const prod = os.hostname() == 'agilesimulations' ? true : false
 
 const logFile = prod ? process.argv[4] : 'server.log'
 
-let currentAction = ''
-let currentData = ''
+const currentAction = ''
+const currentData = ''
 ON_DEATH(function(signal, err) {
   let logStr = new Date()
   if (signal) {
@@ -45,6 +45,7 @@ function emit(event, data) {
 }
 
 io.on('connection', (socket) => {
+  console.log('connection')
   connections = connections + 1
   if (connections > maxConnections) {
     console.log(`Too many connections. Socket ${socket.id} closed`)
@@ -75,6 +76,8 @@ io.on('connection', (socket) => {
   socket.on('showPigs', () => { emit('showPigs') })
 
   socket.on('runRace', () => { emit('runRace') })
+
+  socket.on('runDemoRace', () => { emit('runDemoRace') })
 
   socket.on('backToBetting', () => { emit('backToBetting') })
 
