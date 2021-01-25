@@ -53,8 +53,12 @@
         <td>
           <p>
             The entire game is played in the player's own browser - there is no screen
-            sharing - and multiple players can play in the same location if needed. The host
-            controls the video playback, and again, videos run on the players own machine.
+            sharing - and multiple players can play in the same location if needed.
+          </p>
+          <p>
+            The host controls the video playback - when the host clicks play, the videos run
+            automatically on the player's own machine. When the host presses pause or stop,
+            the videos stop automatically.
           </p>
           <p>
             Bets and winning points are automatically calculated and displayed in real time
