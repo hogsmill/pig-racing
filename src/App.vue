@@ -3,62 +3,70 @@
     <Header />
     <h1>
       Pig Racing
-      <span v-if="isHost">(Host)</span>
+      <span v-if="isHost">(Host<span v-if="currentGroup.id"> - {{ currentGroup.group }}</span>)</span>
       <span v-if="demo">(Demo)</span>
     </h1>
-    <div v-if="isHost" :class="{hidden : running }" class="current-race">
-      <button class="btn btn-warning btn-sm" @click="testVideo()">
-        Test Play Video
-      </button>
-      <button class="btn btn-warning btn-sm" @click="testVideoFrom()">
-        Test Play Video From
-      </button>
-      <button class="btn btn-primary btn-sm" @click="nextRace()">
-        Next Race
-      </button>
+    <div v-if="currentTab == 'setup'">
+      <SetUp :socket="socket" />
     </div>
-    <div v-if="demo && running" class="controls">
-      Click
-      <button class="btn btn-primary btn-sm" @click="finishDemoRace()">
-        Finish
-      </button>
-      to go back to the explanation
-    </div>
+    <div v-if="currentTab == 'racing'">
+      <div v-if="isHost" :class="{hidden : running }" class="current-race">
+        <button class="btn btn-warning btn-sm" @click="testVideo()">
+          Test Play Video
+        </button>
+        <button class="btn btn-warning btn-sm" @click="testVideoFrom()">
+          Test Play Video From
+        </button>
+        <button class="btn btn-primary btn-sm" @click="nextRace()">
+          Next Race
+        </button>
+        <button class="btn btn-primary btn-sm" @click="restart()">
+          Restart
+        </button>
+      </div>
+      <div v-if="demo && running" class="controls">
+        Click
+        <button class="btn btn-primary btn-sm" @click="finishDemoRace()">
+          Finish
+        </button>
+        to go back to the explanation
+      </div>
 
-    <Players v-if="!demo" />
+      <Players v-if="!demo" />
 
-    <div v-if="isHost">
-      Watching Betting: {{ watchingBetting }}
-    </div>
+      <div v-if="isHost">
+        Watching Betting: {{ watchingBetting }}
+      </div>
 
-    <div class="container">
-      <div :class="{hidden : !running }" class="video">
-        <div v-if="isHost" class="controls">
-          <button class="btn btn-warning btn-sm" @click="stopTest()">
-            Stop Test
-          </button>
-          <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">
-            Play
-          </button>
-          <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">
-            Pause
-          </button>
-          <button class="btn btn-primary btn-sm" @click="backToBetting()">
-            Back to Betting
-          </button>
-          <button class="btn btn-primary btn-sm" @click="finish()">
-            Finish
-          </button>
+      <div class="container">
+        <div :class="{hidden : !running }" class="video">
+          <div v-if="isHost" class="controls">
+            <button class="btn btn-warning btn-sm" @click="stopTest()">
+              Stop Test
+            </button>
+            <button class="btn btn-primary btn-sm" @click="playPause()" v-if="!playing">
+              Play
+            </button>
+            <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">
+              Pause
+            </button>
+            <button class="btn btn-primary btn-sm" @click="backToBetting()">
+              Back to Betting
+            </button>
+            <button class="btn btn-primary btn-sm" @click="finish()">
+              Finish
+            </button>
+          </div>
+          <video id="video" width="70%" controls><source src="" type="video/mp4"></video>
         </div>
-        <video id="video" width="70%" controls><source src="" type="video/mp4"></video>
-      </div>
 
-      <div :class="{hidden : running }" class="card-deck">
-        <Races :socket="socket" />
-        <Winnings v-if="!demo" />
-      </div>
+        <div :class="{hidden : running }" class="card-deck">
+          <Races :socket="socket" />
+          <Winnings v-if="!demo" />
+        </div>
 
-      <Demo v-if="demo" :socket="socket" />
+        <Demo v-if="demo" :socket="socket" />
+      </div>
     </div>
   </div>
 </template>
@@ -69,6 +77,7 @@ import params from './lib/params.js'
 import video from './lib/video.js'
 
 import Header from './components/Header.vue'
+import SetUp from './components/SetUp.vue'
 import Players from './components/Players.vue'
 import Races from './components/Races.vue'
 import Winnings from './components/Winnings.vue'
@@ -78,6 +87,7 @@ export default {
   name: 'App',
   components: {
     Header,
+    SetUp,
     Players,
     Races,
     Winnings,
@@ -87,8 +97,14 @@ export default {
     isHost() {
       return this.$store.getters.getHost
     },
+    currentTab() {
+      return this.$store.getters.getCurrentTab
+    },
     demo() {
       return this.$store.getters.getDemo
+    },
+    currentGroup() {
+      return this.$store.getters.getCurrentGroup
     },
     demoRaceFinished() {
       return this.$store.getters.getDemoRaceFinished
@@ -128,6 +144,32 @@ export default {
     if (params.isParam('demo')) {
       this.$store.dispatch('updateDemo', true)
     }
+
+    const self = this
+    window.onload = function() {
+      for (let i = 1; i <= 3; i++) {
+        let player = localStorage.getItem('pr-player-' + i)
+        if (player) {
+          player = JSON.parse(player)
+          self.$store.dispatch('updatePlayer' + i, player)
+        }
+      }
+    }
+
+    this.socket.on('loadRaces', (data) => {
+      this.$store.dispatch('updateRaces', data)
+    })
+
+    this.socket.on('loadGroups', (data) => {
+      this.$store.dispatch('updateGroups', data)
+    })
+
+    this.socket.on('backToBetting', () => {
+      this.$store.dispatch('updateRunning', false)
+    })
+
+    this.socket.emit('loadRaces')
+    this.socket.emit('loadGroups')
   },
   mounted() {
     this.socket.on('testVideo', () => {
@@ -140,9 +182,6 @@ export default {
       this._stopTest()
     })
 
-    this.socket.on('setRace', (data) => {
-      this.$store.dispatch('updateCurrentRace', data['race'])
-    })
     this.socket.on('playPause', () => {
       const video = document.getElementById('video')
       if (video.paused) {
@@ -155,47 +194,42 @@ export default {
     })
   },
   methods: {
-    playPause: function() {
+    playPause() {
       this.socket.emit('playPause')
     },
-    testVideo: function() {
+    testVideo() {
       this.socket.emit('testVideo')
     },
-    testVideoFrom: function() {
+    testVideoFrom() {
       this.socket.emit('testVideoFrom')
     },
-    stopTest: function() {
+    stopTest() {
       this.socket.emit('stopTest')
     },
-    _testVideo: function() {
+    _testVideo() {
       video.setTestVideo()
       this.$store.dispatch('updateRunning', true)
     },
-    _testVideoFrom: function() {
+    _testVideoFrom() {
       video.setVideoTime(30)
       video.playVideo()
       this.$store.dispatch('updateRunning', true)
     },
-    _stopTest: function() {
+    _stopTest() {
       video.pauseVideo()
       this.$store.dispatch('updateRunning', false)
     },
-    nextRace: function() {
-      let currentRace
-      if (this.currentRace < this.races.length - 1) {
-        currentRace = this.currentRace + 1
-      } else {
-        currentRace = -1
-      }
-      this.$store.dispatch('updateCurrentRace', currentRace)
-      this.socket.emit('setRace', { race: currentRace })
+    nextRace() {
+      this.socket.emit('setNextRace', {groupId: this.currentGroup.id})
     },
-    backToBetting: function() {
-      this.socket.emit('backToBetting', {})
-      this.$store.dispatch('updatePigsHaveBeenShown', this.currentRace)
+    restart() {
+      this.socket.emit('restart', {groupId: this.currentGroup.id})
     },
-    finish: function() {
-      this.socket.emit('finish', {})
+    backToBetting() {
+      this.socket.emit('backToBetting', {groupId: this.currentGroup.id})
+    },
+    finish() {
+      this.socket.emit('finish', {groupId: this.currentGroup.id})
     },
     finishDemoRace() {
       this.socket.emit('finish', {})
@@ -217,13 +251,13 @@ export default {
   .current-race { padding: 6px; }
   .races { width: 48%; display: inline-block; }
   .race { padding-bottom: 6px; }
-  .race-name { position: relative; text-align: left; padding: 0.5em; background-color: #bbb; color: #fff; }
+  .race-name { position: relative; text-align: left; padding: 10px; background-color: #bbb; color: #fff; }
   .race-name-name { font-weight: bold; width: 20%; display: inline; }
   .race table { width: 100%; }
   .bet-header { width: 150px; }
-  .run-race { position: relative; top: -5px; }
+  .run-race { position: relative; top: -7px; }
   .current { margin-bottom: 2px; }
-  .places { text-align: right; position: absolute; right: 6px; top: 8px; width: 78%; display: inline; }
+  .places { text-align: right; float: right; width: 78%; }
   .places span { vertical-align: middle; display: inline; margin: 2px;  }
   .places img { width: 20px; }
 

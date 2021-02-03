@@ -4,7 +4,7 @@
       Winnings
     </h2>
     <div v-for="(punter, winningsIndex) in punters" :key="winningsIndex">
-      <div v-if="punterGroup == punter.group">
+      <div>
         <div class="punter">
           {{ punter['name'] }}
         </div>
@@ -23,9 +23,6 @@ export default {
   computed: {
     races() {
       return this.$store.getters.getRaces
-    },
-    punterGroup() {
-      return this.$store.getters.getPunterGroup
     },
     punters() {
       return this.$store.getters.getSortedPunters

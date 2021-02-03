@@ -25,11 +25,9 @@
       </tr>
       <tr v-for="(pig, pigIndex) in race['pigs']" :key="pigIndex">
         <td v-for="(pigPunter, pigPunterIndex) in punters" :key="pigPunterIndex">
-          <img v-if="!pigPunter.initials && isPlayer(pigPunter)" @click="betOn(pig, pigPunter)" :src="getAvatar(pigPunter.name)" class="avatar">
-          <div v-if="pigPunter.initials && isPlayer(pigPunter)" @click="betOn(pig, pigPunter)" class="rounded-circle initials">
+          <div v-if="isPlayer(pigPunter)" @click="betOn(pig, pigPunter)" class="rounded-circle initials">
             {{ pigPunter.initials }}
           </div>
-          <span class="punter-span" v-if="!pigPunter.initials && isPlayer(pigPunter)" @click="betOn(pig, pigPunter)">{{ pigPunter['name'] }}</span>
         </td>
         <td :class="getPigPlace(pig)" class="rounded-left">
           <span v-if="getPigPlace(pig) == 'gold'"><img class="medal" src="../../assets/img/1st.png"></span>
@@ -39,8 +37,7 @@
           {{ pig['name'] }}
         </td>
         <td :class="getPigPlace(pig)" v-for="(bet, betIndex) in pig['bets']" :key="'Bet-' + betIndex">
-          <img v-if="!bet.initials" :src="getAvatar(bet.name)" class="avatar">
-          <div v-if="bet.initials" class="rounded-circle initials">
+          <div class="rounded-circle initials">
             {{ bet.initials }}
           </div>
         </td>
@@ -63,6 +60,9 @@ export default {
     host() {
       return this.$store.getters.getHost
     },
+    currentGroup() {
+      return this.$store.getters.getCurrentGroup
+    },
     currentRace() {
       return this.$store.getters.getCurrentRace
     },
@@ -75,9 +75,6 @@ export default {
     player3() {
       return this.$store.getters.getPlayer3
     },
-    punterGroup() {
-      return this.$store.getters.getPunterGroup
-    },
     punters() {
       return this.$store.getters.getPunters
     },
@@ -86,51 +83,42 @@ export default {
     }
   },
   mounted() {
-    this.socket.on('bet', (data) => {
-      this._betOn(data['pig'], data['punter'])
-    })
     this.socket.on('showPigs', () => {
       this.$store.dispatch('updateRunning', true)
       video.loadVideo(this.races[this.currentRace])
       if (this.currentRace > 0) {
         video.setVideoTime(30)
       }
-      video.playVideo()
+      window.setTimeout(function() {
+        video.playVideo()
+      }, 1000)
       this.$store.dispatch('updatePlaying', true)
       this.$store.dispatch('updateWatchingBetting', 'add')
       video.pauseVideoAt(110)
     })
-    this.socket.on('backToBetting', () => {
-      this.$store.dispatch('updateRunning', false)
-    })
+
     this.socket.on('runRace', () => {
       this.$store.dispatch('updateRunning', true)
       video.setVideoTime(110)
-      video.playVideo()
+      window.setTimeout(function() {
+        video.playVideo()
+      }, 1000)
       this.$store.dispatch('updatePlaying', false)  // Why?
     })
+
     this.socket.on('finish', () => {
       this.$store.dispatch('updateRunning', false)
       video.pauseVideo()
       this.$store.dispatch('updateRaceHasRun', this.currentRace)
-      this.calculateWinnings()
     })
+
     this.socket.on('place', (data) => {
       this._place(data['race'], data['pig'], data['place'])
     })
   },
   methods: {
     isPlayer(player) {
-      const group = player.group == 'Footy'
-      const isAPlayer = player.name == this.player1 || player.name == this.player2 || player.name == this.player3
-      return group && isAPlayer
-    },
-    getAvatar(name) {
-      try {
-        return require('../../assets/img/' + name.toLowerCase() + '.jpg')
-      } catch(e) {
-        return require('../../assets/img/default.png')
-      }
+      return player.id == this.player1.id || player.id == this.player2.id || player.id == this.player3.id
     },
     getPigPlace(pig) {
       if (!this.race.hasRun) {
@@ -144,105 +132,16 @@ export default {
         }
       }
     },
-    getPlace(race, n) {
-      for (let i = 0; i < race['pigs'].length; i++) {
-        if (race['pigs'][i]['place'] == n) {
-          return race['pigs'][i]['name']
-        }
-      }
+    betOn(pig, punter) {
+      this.socket.emit('bet', {groupId: this.currentGroup.id, pig: pig, punter: punter})
     },
-    place : function(race, pig, place) {
-      if (this.host) {
-        this.socket.emit('place', { race: race, pig: pig, place: place })
-      }
-    },
-    _place: function(race, pig, place) {
-      let i
-      for (i = 0; i < this.races.length; i++) {
-        if (this.races[i]['name'] == race['name']) {
-          race = this.races[i]
-        }
-      }
-      for (i = 0; i < race['pigs'].length; i++) {
-        if (race['pigs'][i]['name'] == pig['name']) {
-          pig = race['pigs'][i]
-        }
-        if (race['pigs'][i]['place'] == place) {
-          race['pigs'][i]['place'] = 0
-        }
-      }
-      pig['place'] = place
-      this.calculateWinnings()
-    },
-    betOn: function(pig, punter) {
-      this.socket.emit('bet', { pig: pig, punter: punter })
-    },
-    _betOn: function(pig, punter) {
-      const pigs = this.races[this.currentRace]['pigs']
-      for (let j = 0; j < pigs.length; j++) {
-        const racePig = pigs[j]
-        if (racePig.name == pig.name) {
-          pig = racePig
-        }
-        for (let k = 0; k < racePig.bets.length; k++) {
-          const bet = racePig.bets[k]
-          if (bet.name == punter.name) {
-            racePig.bets.splice(k, 1)
-          }
-        }
-      }
-      pig.bets.push(punter)
-    },
-    addWinnings: function(bet, place) {
-      for (let i = 0; i < this.punters.length; i++) {
-        const punter = this.punters[i]
-        if (bet.name == punter.name) {
-          switch(place) {
-            case 1:
-              punter.winnings = punter.winnings + 10
-              break
-            case 2:
-              punter.winnings = punter.winnings + 6
-              break
-            case 3:
-              punter.winnings = punter.winnings + 3
-              break
-            case 4:
-              punter.winnings = punter.winnings + 1
-              break
-            default:
-              console.log('unknown place')
-          }
-        }
-      }
-    },
-    calculateRaceWinnings(race) {
-      for (let i = 0; i < race.pigs.length; i++) {
-        const pig = race.pigs[i]
-        if (pig.place > 0) {
-          for (let j = 0; j < pig.bets.length; j++) {
-            this.addWinnings(pig.bets[j], pig.place)
-          }
-        }
-      }
-    },
-    calculateWinnings: function() {
-      let i
-      for (i = 0; i < this.punters.length; i++) {
-        this.punters[i].winnings = 0
-      }
-      for (i = 0; i < this.races.length; i++) {
-        const race = this.races[i]
-        this.calculateRaceWinnings(race)
-      }
-    },
-    showPigs: function() {
+    showPigs() {
       this.socket.emit('showPigs')
     },
-    runRace: function() {
+    runRace() {
       this.socket.emit('runRace')
     },
-    pauseVideo: function() {
+    pauseVideo() {
       video.pauseVideo()
       this.$store.dispatch('updateWatchingBetting', 'delete')
     }
