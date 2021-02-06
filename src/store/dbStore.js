@@ -56,7 +56,13 @@ module.exports = {
       if (err) throw err
       if (res) {
         const races = raceFuns.races()
-        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, currentRace: -1}}, function(err, res) {
+        const punters = []
+        for (let i = 0; i < res.punters.length; i++) {
+          const punter = res.punters[i]
+          punter.winnings = 0
+          punters.push(punter)
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1}}, function(err, res) {
           if (err) throw err
           if (res) {
             _loadGroups(db, io)
