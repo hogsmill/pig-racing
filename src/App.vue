@@ -57,7 +57,8 @@
               Finish
             </button>
           </div>
-          <video id="video" width="70%" controls><source src="" type="video/mp4"></video>
+          <video v-if="runningTest" id="video" width="70%" controls><source src="" type="video/mp4"></video>
+          <video v-if="!runningTest" id="video" width="70%"><source src="" type="video/mp4"></video>
         </div>
 
         <div :class="{hidden : running }" class="card-deck">
@@ -92,6 +93,11 @@ export default {
     Races,
     Winnings,
     Demo
+  },
+  data() {
+    return {
+      runningTest: false
+    }
   },
   computed: {
     isHost() {
@@ -198,12 +204,15 @@ export default {
       this.socket.emit('playPause')
     },
     testVideo() {
+      this.runningTest = true
       this.socket.emit('testVideo')
     },
     testVideoFrom() {
+      this.runningTest = true
       this.socket.emit('testVideoFrom')
     },
     stopTest() {
+      this.runningTest = false
       this.socket.emit('stopTest')
     },
     _testVideo() {
