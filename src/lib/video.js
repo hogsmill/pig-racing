@@ -23,10 +23,11 @@ const Video = {
     const video = document.getElementById('video')
     video.pause()
   },
-  pauseVideoAt: function(n) {
+  pauseVideoAt: function(n, socket, groupId) {
     const timeUpdateFunction = function() {
       if (this.currentTime >= n) {
           this.pause()
+          socket.emit('watchingBetting', {groupId: groupId, watchingBetting: false})
           this.removeEventListener('timeupdate',timeUpdateFunction)
       }
     }

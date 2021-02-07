@@ -2,10 +2,10 @@
   <div class="race" :class="{ current : currentRace == raceIndex }">
     <div class="race-name">
       <div class="race-name-name">
-        {{ race['name'] }}
+        {{ race.name }}
       </div>
       <div v-if="host && currentRace == raceIndex && !race['hasRun']" class="places">
-        <button v-if="!race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="showPigs()">
+        <button v-if="!race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="showPigs(raceIndex)">
           Place Bets
         </button>
         <button v-if="race['pigsShown']" class="btn btn-primary btn-sm run-race" @click="runRace()">
@@ -83,18 +83,20 @@ export default {
     }
   },
   mounted() {
-    this.socket.on('showPigs', () => {
-      this.$store.dispatch('updateRunning', true)
-      video.loadVideo(this.races[this.currentRace])
-      if (this.currentRace > 0) {
-        video.setVideoTime(30)
+    this.socket.on('showPigs', (data) => {
+      if (this.raceIndex == data.raceIndex) {
+        this.$store.dispatch('updateRunning', true)
+        video.loadVideo(this.races[this.currentRace])
+        if (this.currentRace > 0) {
+          video.setVideoTime(30)
+        }
+        window.setTimeout(function() {
+          video.playVideo()
+        }, 1000)
+        this.$store.dispatch('updatePlaying', true)
+        this.socket.emit('watchingBetting', {groupId: this.currentGroup.id, watchingBetting: true})
+        video.pauseVideoAt(110, this.socket, this.currentGroup.id)
       }
-      window.setTimeout(function() {
-        video.playVideo()
-      }, 1000)
-      this.$store.dispatch('updatePlaying', true)
-      this.$store.dispatch('updateWatchingBetting', 'add')
-      video.pauseVideoAt(110)
     })
 
     this.socket.on('runRace', () => {
@@ -135,15 +137,14 @@ export default {
     betOn(pig, punter) {
       this.socket.emit('bet', {groupId: this.currentGroup.id, pig: pig, punter: punter})
     },
-    showPigs() {
-      this.socket.emit('showPigs')
+    showPigs(raceIndex) {
+      this.socket.emit('showPigs', {raceIndex: raceIndex})
     },
-    runRace() {
-      this.socket.emit('runRace')
+    runRace(race) {
+      this.socket.emit('runRace', {race: race})
     },
     pauseVideo() {
       video.pauseVideo()
-      this.$store.dispatch('updateWatchingBetting', 'delete')
     }
   }
 }

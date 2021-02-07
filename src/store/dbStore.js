@@ -62,7 +62,7 @@ module.exports = {
           punter.winnings = 0
           punters.push(punter)
         }
-        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1}}, function(err, res) {
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1, watchingBetting: []}}, function(err, res) {
           if (err) throw err
           if (res) {
             _loadGroups(db, io)
@@ -154,7 +154,8 @@ module.exports = {
       current: false,
       include: raceFuns.include(),
       races: raceFuns.races(),
-      currentRace: -1
+      currentRace: -1,
+      watchingBetting: 0
     }
     db.collection('pigRacing').insertOne(res, function(err, res) {
       if (err) throw err

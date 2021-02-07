@@ -27,7 +27,7 @@ export const store = new Vuex.Store({
     currentRace: -1,
     running: false,
     playing: false,
-    watchingBetting: 0,
+    watchingBetting: {},
     player1: {},
     player2: {},
     player3: {},
@@ -161,11 +161,7 @@ export const store = new Vuex.Store({
       state.playing = payload
     },
     updateWatchingBetting: (state, payload) => {
-      if (payload == 'add') {
-        state.watchingBetting = state.watchingBetting + 1
-      } else {
-        state.watchingBetting = state.watchingBetting - 1
-      }
+      state.watchingBetting = payload
     },
     updatePlayer1: (state, payload) => {
       state.player1 = payload

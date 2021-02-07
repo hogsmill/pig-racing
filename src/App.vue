@@ -35,7 +35,7 @@
       <Players v-if="!demo" />
 
       <div v-if="isHost">
-        Watching Betting: {{ watchingBetting }}
+        Watching Betting: {{ Object.keys(watchingBetting).length }}
       </div>
 
       <div class="container">
@@ -57,9 +57,7 @@
               Finish
             </button>
           </div>
-          <div>Running Test: {{ runningTest }}</div>
-          <video v-if="runningTest" id="video" width="70%" controls><source src="" type="video/mp4"></video>
-          <video v-if="!runningTest" id="video" width="70%"><source src="" type="video/mp4"></video>
+          <video id="video" width="70%"><source src="" type="video/mp4"></video>
         </div>
 
         <div :class="{hidden : running }" class="card-deck">
@@ -94,11 +92,6 @@ export default {
     Races,
     Winnings,
     Demo
-  },
-  data() {
-    return {
-      runningTest: false
-    }
   },
   computed: {
     isHost() {
@@ -175,6 +168,10 @@ export default {
       this.$store.dispatch('updateRunning', false)
     })
 
+    this.socket.on('watchingBetting', (data) => {
+      this.$store.dispatch('updateWatchingBetting', data)
+    })
+
     this.socket.emit('loadRaces')
     this.socket.emit('loadGroups')
   },
@@ -205,18 +202,16 @@ export default {
       this.socket.emit('playPause')
     },
     testVideo() {
-      this.runningTest = true
       this.socket.emit('testVideo')
     },
     testVideoFrom() {
-      this.runningTest = true
       this.socket.emit('testVideoFrom')
     },
     stopTest() {
-      this.runningTest = false
       this.socket.emit('stopTest')
     },
     _testVideo() {
+      document.getElementById('video').controls = true
       video.setTestVideo()
       this.$store.dispatch('updateRunning', true)
     },
@@ -226,6 +221,7 @@ export default {
       this.$store.dispatch('updateRunning', true)
     },
     _stopTest() {
+      document.getElementById('video').controls = false
       video.pauseVideo()
       this.$store.dispatch('updateRunning', false)
     },

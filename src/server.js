@@ -113,8 +113,17 @@ function doDb(fun, data) {
   })
 }
 
+const watching = {}
+function watchingBetting(data, socketId) {
+  if (data.watchingBetting) {
+    watching[socketId] = true
+  } else {
+    delete watching[socketId]
+  }
+  emit('watchingBetting', watching)
+}
+
 io.on('connection', (socket) => {
-  console.log('connection')
   connections = connections + 1
   if (connections > maxConnections) {
     console.log(`Too many connections. Socket ${socket.id} closed`)
@@ -142,13 +151,15 @@ io.on('connection', (socket) => {
 
   socket.on('restart', (data) => { doDb('restart', data) })
 
+  socket.on('watchingBetting', (data) => { watchingBetting(data, socket.id) })
+
   socket.on('bet', (data) => { doDb('bet', data) })
 
   socket.on('place', (data) => { emit('place', data) })
 
   socket.on('playPause', () => { emit('playPause') })
 
-  socket.on('showPigs', () => { emit('showPigs') })
+  socket.on('showPigs', (data) => { emit('showPigs', data) })
 
   socket.on('runRace', () => { emit('runRace') })
 
@@ -157,8 +168,6 @@ io.on('connection', (socket) => {
   socket.on('backToBetting', (data) => { doDb('backToBetting', data) })
 
   socket.on('finish', (data) => { doDb('finish', data) })
-
-  //socket.on('finish', () => { emit('finish') })
 
   // Setup
   socket.on('setGroup', (data) => { doDb('setGroup', data) })

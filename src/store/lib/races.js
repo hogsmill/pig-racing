@@ -190,7 +190,6 @@ module.exports = {
     let nextRace = -1, found = false
     while (!found && n < races.length - 1) {
       n = n + 1
-      console.log(n, races[n].name, include[races[n].name])
       if (include[races[n].name] == true) {
         found = true
         nextRace = n
