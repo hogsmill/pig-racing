@@ -57,6 +57,7 @@
               Finish
             </button>
           </div>
+          <div>Running Test: {{ runningTest }}</div>
           <video v-if="runningTest" id="video" width="70%" controls><source src="" type="video/mp4"></video>
           <video v-if="!runningTest" id="video" width="70%"><source src="" type="video/mp4"></video>
         </div>
