@@ -211,6 +211,7 @@ module.exports = {
         punters.push({
           id: uuidv4(),
           name: data.punter,
+          include: true,
           initials: stringFuns.initials(data.punter),
           winnings: 0
         })
@@ -236,6 +237,30 @@ module.exports = {
           if (res.punters[i].id != data.id) {
             punters.push(res.punters[i])
           }
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {punters: punters}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  toggleIncludePunter: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('toggleIncludePunter', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const punters = []
+        for (let i = 0; i < res.punters.length; i++) {
+          if (res.punters[i].id == data.id) {
+            res.punters[i].include = !res.punters[i].include
+          }
+          punters.push(res.punters[i])
         }
         db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {punters: punters}}, function(err, res) {
           if (err) throw err

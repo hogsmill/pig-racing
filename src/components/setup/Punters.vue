@@ -47,8 +47,9 @@
                 </thead>
                 <tbody>
                   <tr v-for="(punter, pindex) in editingGroupPunters" :key="pindex" :value="editingGroupId">
-                    <td>
-                      <i @click="deletePunter(punter.id)" :title="'Delete ' + punter.punter" class="fas fa-trash-alt" />
+                    <td class="center">
+                      <i @click="deletePunter(punter.id)" :title="'Delete ' + punter.name" class="fas fa-trash-alt" />
+                      <input type="checkbox" :checked="punter.include" @click="toggleInclude(punter.id)">
                     </td>
                     <td>
                       {{ punter.name }}
@@ -107,6 +108,9 @@ export default {
     },
     deletePunter(id) {
       this.socket.emit('deletePunter', {groupId: this.editingGroupId, id: id})
+    },
+    toggleInclude(id) {
+      this.socket.emit('toggleIncludePunter', {groupId: this.editingGroupId, id: id})
     }
   }
 }
@@ -117,6 +121,14 @@ export default {
 
     .punters {
       width: 100%;
+
+      .center {
+        text-align: center;
+      }
+
+      input[type=checkbox] {
+        margin: 2px;
+      }
     }
   }
 </style>

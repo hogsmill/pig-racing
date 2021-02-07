@@ -103,6 +103,9 @@ function doDb(fun, data) {
       case 'deletePunter':
         dbStore.deletePunter(db, io, data, debugOn)
         break
+      case 'toggleIncludePunter':
+        dbStore.toggleIncludePunter(db, io, data, debugOn)
+        break
       case 'includeRace':
         dbStore.includeRace(db, io, data, debugOn)
         break
@@ -179,6 +182,8 @@ io.on('connection', (socket) => {
   socket.on('deleteGroup', (data) => { doDb('deleteGroup', data) })
 
   socket.on('addPunter', (data) => { doDb('addPunter', data) })
+
+  socket.on('toggleIncludePunter', (data) => { doDb('toggleIncludePunter', data) })
 
   socket.on('deletePunter', (data) => { doDb('deletePunter', data) })
 
