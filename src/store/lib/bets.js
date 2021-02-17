@@ -37,8 +37,8 @@ module.exports = {
       if (i == currentRace) {
         const pigs = []
         for (let j = 0; j < race.pigs.length; j++) {
-          let racePig = race.pigs[j]
-          let bets = removeBet(racePig.bets, punter)
+          const racePig = race.pigs[j]
+          const bets = removeBet(racePig.bets, punter)
           if (racePig.name == pig.name) {
             bets.push(punter)
           }

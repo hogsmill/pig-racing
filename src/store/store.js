@@ -27,6 +27,9 @@ export const store = new Vuex.Store({
     currentRace: -1,
     running: false,
     playing: false,
+    quiz: false,
+    quizConfig: {},
+    slides: [],
     watchingBetting: {},
     player1: {},
     player2: {},
@@ -35,34 +38,7 @@ export const store = new Vuex.Store({
     avatarType: 'initials',
     groups: [],
     editingGroupId: null,
-    punters: [
-
-      { name: 'Steve', avatar: 'S', winnings: 0, group: 'Wellses' },
-      { name: 'Fiona', avatar: 'F', winnings: 0, group: 'Wellses' },
-      { name: 'Chris', avatar: 'C', winnings: 0, group: 'Wellses' },
-      { name: 'Tony', avatar: 'T', winnings: 0, group: 'Wellses' },
-      { name: 'Jo Anne', avatar: 'J', winnings: 0, group: 'Wellses' },
-      { name: 'Rick', avatar: 'R', winnings: 0, group: 'Wellses' },
-
-      { name: 'Greg', initials: 'GC', winnings: 0, group: 'Footy' },
-      { name: 'Gaffer', initials: 'MH', winnings: 0, group: 'Footy' },
-      { name: 'Steve Archer', initials: 'SA', winnings: 0, group: 'Footy' },
-      { name: 'Adrian Maher', initials: 'AM', winnings: 0, group: 'Footy' },
-      { name: 'Richard Hodgson', initials: 'RH', winnings: 0, group: 'Footy' },
-      { name: 'Andy Keaney', initials: 'AK', winnings: 0, group: 'Footy' },
-      { name: 'Dave Wood', initials: 'DW', winnings: 0, group: 'Footy' },
-      { name: 'Jo Wood', initials: 'JW', winnings: 0, group: 'Footy' },
-      { name: 'Nick Williams', initials: 'NW', winnings: 0, group: 'Footy' },
-      { name: 'Brendon Richards', initials: 'BR', winnings: 0, group: 'Footy' },
-      { name: 'Kevin Murphy', initials: 'KM', winnings: 0, group: 'Footy' },
-      { name: 'Darrell', initials: 'D', winnings: 0, group: 'Footy' },
-      { name: 'Dave Peel', initials: 'DP', winnings: 0, group: 'Footy' },
-      { name: 'Dave Edwards', initials: 'DW', winnings: 0, group: 'Footy' },
-      { name: 'Triston', initials: 'T', winnings: 0, group: 'Footy' },
-      { name: 'Lloyd Cook', initials: 'LC', winnings: 0, group: 'Footy' },
-      { name: 'Henry Rayner', initials: 'HR', winnings: 0, group: 'Footy' },
-      { name: 'Iain Clarke', initials: 'IC', winnings: 0, group: 'Footy' }
-    ]
+    punters: []
   },
   getters: {
     thisGame: (state) => {
@@ -90,6 +66,29 @@ export const store = new Vuex.Store({
     getRunning: (state) => {
       return state.running
     },
+    getQuiz: (state) => {
+      return state.quiz
+    },
+    getNoOfRounds: (state) => {
+      const current = currentGroup(state)
+      return current ? current.quizConfig.rounds.length : 0
+    },
+    getCurrentRound: (state) => {
+      const current = currentGroup(state)
+      return current ? current.quizConfig.rounds[current.quizConfig.round - 1] : []
+    },
+    getCurrentRoundNumber: (state) => {
+      const current = currentGroup(state)
+      return current.quizConfig.round
+    },
+    getCurrentSlide: (state) => {
+      const current = currentGroup(state)
+      return current ? current.quizConfig.rounds[current.quizConfig.round - 1][current.quizConfig.slide - 1] : {}
+    },
+    getCurrentSlideNumber: (state) => {
+      const current = currentGroup(state)
+      return current.quizConfig.slide
+    },
     getPlaying: (state) => {
       return state.playing
     },
@@ -108,13 +107,16 @@ export const store = new Vuex.Store({
     getGroups: (state) => {
       return state.groups
     },
+    getSlides: (state) => {
+      return state.slides
+    },
     getCurrentGroup: (state) => {
       return currentGroup(state)
     },
     getPunters: (state) => {
       return state.punters.sort((a, b) => (a.name > b.name) ? 1 : -1)
     },
-    getSortedPunters: (state) => {
+    getRaceSortedPunters: (state) => {
       const punters = []
       for (let i = 0; i < state.punters.length; i++) {
         if (state.punters[i].winnings > 0) {
@@ -122,6 +124,15 @@ export const store = new Vuex.Store({
         }
       }
       return punters.sort((a, b) => (b.winnings >= a.winnings) ? 1 : -1)
+    },
+    getQuizSortedPunters: (state) => {
+      const punters = []
+      for (let i = 0; i < state.punters.length; i++) {
+        if (state.punters[i].quizScore > 0) {
+          punters.push(state.punters[i])
+        }
+      }
+      return punters.sort((a, b) => (b.quizScore >= a.quizScore) ? 1 : -1)
     },
     getRaces: (state) => {
       const current = currentGroup(state)
@@ -133,6 +144,10 @@ export const store = new Vuex.Store({
     getEditingGroupPunters: (state) => {
       const current = currentEditingGroup(state)
       return current ? current.punters : []
+    },
+    getEditingGroupQuiz: (state) => {
+      const current = currentEditingGroup(state)
+      return current && current.quizConfig ? current.quizConfig : {}
     },
     getEditingGroupInclude: (state) => {
       const current = currentEditingGroup(state)
@@ -162,6 +177,12 @@ export const store = new Vuex.Store({
     },
     updateWatchingBetting: (state, payload) => {
       state.watchingBetting = payload
+    },
+    showQuizRound: (state, payload) => {
+      state.quiz = payload
+    },
+    setQuizSlide: (state, payload) => {
+      state.slide = payload
     },
     updatePlayer1: (state, payload) => {
       state.player1 = payload
@@ -196,6 +217,9 @@ export const store = new Vuex.Store({
     },
     updateRaceHasRun: (state, payload) => {
       state.races[payload].hasRun = true
+    },
+    updateSlides: (state, payload) => {
+      state.slides = payload
     }
   },
   actions: {
@@ -226,6 +250,12 @@ export const store = new Vuex.Store({
     updateWatchingBetting: ({ commit }, payload) => {
       commit('updateWatchingBetting', payload)
     },
+    showQuizRound: ({ commit }, payload) => {
+      commit('showQuizRound', payload)
+    },
+    setQuizSlide: ({ commit }, payload) => {
+      commit('setQuizSlide', payload)
+    },
     updatePlayer1: ({ commit }, payload) => {
       commit('updatePlayer1', payload)
     },
@@ -246,6 +276,9 @@ export const store = new Vuex.Store({
     },
     setEditingGroupId: ({ commit }, payload) => {
       commit('setEditingGroupId', payload)
-    }
+    },
+    updateSlides: ({ commit }, payload) => {
+      commit('updateSlides', payload)
+    },
   }
 })

@@ -1,6 +1,7 @@
 
 const betFuns = require('./lib/bets.js')
 const raceFuns = require('./lib/races.js')
+const quizFuns = require('./lib/quizzes.js')
 const stringFuns = require('./lib/stringFuns.js')
 
 const { v4: uuidv4 } = require('uuid')
@@ -62,7 +63,10 @@ module.exports = {
           punter.winnings = 0
           punters.push(punter)
         }
-        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1, watchingBetting: []}}, function(err, res) {
+        const quizConfig = res.quizConfig
+        quizConfig.round = 1
+        quizConfig.slide = 1
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1, watchingBetting: [], quizConfig: quizConfig}}, function(err, res) {
           if (err) throw err
           if (res) {
             _loadGroups(db, io)
@@ -143,6 +147,80 @@ module.exports = {
     })
   },
 
+  setQuizSlide: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setQuizSlide', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {'quizConfig.slide': data.slide}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  submitAnswer: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('submitAnswer', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const punters = []
+        for (let i = 0; i < res.punters.length; i++) {
+          const punter = res.punters[i]
+          if (punter.id == data.punterId) {
+            const answers = []
+            if (punter.quizAnswers) {
+              for (let j = 0; j < punter.quizAnswers.length; j++) {
+                if (punter.quizAnswers[j].slide != data.slide) {
+                  answers.push(punter.quizAnswers[j])
+                }
+              }
+            }
+            answers.push({
+              slide: data.slide,
+              answer: data.answer
+            })
+            punter.quizAnswers = answers
+          }
+          punters.push(punter)
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {punters: punters}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  finishQuizRound: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('finishQuizRound', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const quizConfig = res.quizConfig
+        quizConfig.round = quizConfig.round + 1
+        quizConfig.slide = 1
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {quizConfig: quizConfig}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+           _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
   addGroup: function(db, io, data, debugOn) {
 
     if (debugOn) { console.log('addGroup', data) }
@@ -155,7 +233,9 @@ module.exports = {
       include: raceFuns.include(),
       races: raceFuns.races(),
       currentRace: -1,
-      watchingBetting: 0
+      watchingBetting: 0,
+      quiz: false,
+      quizConfig: quizFuns.initialConfig()
     }
     db.collection('pigRacing').insertOne(res, function(err, res) {
       if (err) throw err
@@ -177,7 +257,8 @@ module.exports = {
           if (res[r].id == data.id) {
             current = !res[r].current
           }
-          db.collection('pigRacing').updateOne({'_id': res[r]._id}, {$set: {current: current}}, function(err, res) {
+          const quizConfig = res.quizConfig ? res.quizConfig : quizFuns.initialConfig()
+          db.collection('pigRacing').updateOne({'_id': res[r]._id}, {$set: {current: current, quizConfig: quizConfig}}, function(err, res) {
             if (err) throw err
             if (res) {
               _loadGroups(db, io)
@@ -200,6 +281,24 @@ module.exports = {
     })
   },
 
+  setGroupQuiz: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setGroupQuiz', data) }
+
+    db.collection('pigRacing').findOne({id: data.id}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const showQuiz = !res.showQuiz
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {showQuiz: showQuiz}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
   addPunter: function(db, io, data, debugOn) {
 
     if (debugOn) { console.log('addPunter', data) }
@@ -213,7 +312,8 @@ module.exports = {
           name: data.punter,
           include: true,
           initials: stringFuns.initials(data.punter),
-          winnings: 0
+          winnings: 0,
+          quizAnswers: []
         })
         db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {punters: punters}}, function(err, res) {
           if (err) throw err
@@ -282,6 +382,130 @@ module.exports = {
         const include = res.include
         include[data.race] = !res.include[data.race]
         db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {include: include}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  setNoOfRounds: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setNoOfRounds', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const quizConfig = res.quizConfig
+        const rounds = quizConfig.rounds
+        if (rounds.length < data.noOfRounds) {
+          for (let i = rounds.length; i < data.noOfRounds; i++) {
+            rounds.push([])
+          }
+        } else if (rounds.length > data.noOfRounds) {
+          rounds = rounds.slice(0, data.noOfRounds)
+        }
+        quizConfig.noOfRounds = data.noOfRounds
+        quizConfig.rounds = rounds
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {quizConfig: quizConfig}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  loadSlides: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('putSlideInRound', data) }
+
+    io.emit('loadSlides', quizFuns.slides())
+  },
+
+  putSlideInRound: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('putSlideInRound', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const rounds = []
+        for (let i = 0; i < res.quizConfig.rounds.length; i++) {
+          let round
+          if (i == data.round - 1) {
+            round = quizFuns.addToRound(data.slide, res.quizConfig.rounds[i] )
+          } else {
+            round = quizFuns.deleteFromRound(data.slide, res.quizConfig.rounds[i] )
+          }
+          rounds.push(round)
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {'quizConfig.rounds': rounds}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  deleteSlideFromRound: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('deleteSlideFromRound', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const rounds = []
+        for (let i = 0; i < res.quizConfig.rounds.length; i++) {
+          const round = quizFuns.deleteFromRound(data.slide, res.quizConfig.rounds[i] )
+          rounds.push(round)
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {'quizConfig.rounds': rounds}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  setAnswerCorrect: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setAnswerCorrect', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const punters = []
+        for (let i = 0; i < res.punters.length; i++) {
+          const punter = res.punters[i]
+          if (punter.id == data.punterId) {
+            const answers = []
+            for (j = 0; j < punter.quizAnswers.length; j++) {
+              const answer = punter.quizAnswers[j]
+              if (answer.slide.number == data.slide) {
+                answer.slide.correct = data.value
+              }
+              answers.push(answer)
+            }
+            punter.quizAnswers = answers
+          }
+          let score = 0
+          for (let k = 0; k < punter.quizAnswers.length; k++) {
+            if (punter.quizAnswers[k].slide.correct) {
+              score = score + 1
+            }
+          }
+          punter.quizScore = score
+          punters.push(punter)
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {punters}}, function(err, res) {
           if (err) throw err
           if (res) {
             _loadGroups(db, io)

@@ -33,7 +33,7 @@
           </tr>
           <tr v-for="(race, index) in races" :key="index">
             <td class="race-include">
-              <input type="checkbox" :checked="editingGroupInclude[race.name]" @click="includeRace(race.name)">
+              <input type="checkbox" :checked="editingGroupInclude && editingGroupInclude[race.name]" @click="includeRace(race.name)">
             </td>
             <td>
               {{ race.name }}

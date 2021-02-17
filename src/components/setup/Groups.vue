@@ -27,6 +27,9 @@
               <i @click="deleteGroup(group.id)" :title="'Delete ' + group.group" class="fas fa-trash-alt" />
               {{ group.group }}
             </td>
+            <td>
+              <input type="checkbox" :checked="group.showQuiz" @click="setGroupQuiz(group.id)"> Include quiz?
+            </td>
           </tr>
         </table>
       </td>
@@ -68,6 +71,9 @@ export default {
     setGroup(id) {
       this.socket.emit('setGroup', {id: id})
     },
+    setGroupQuiz(id) {
+      this.socket.emit('setGroupQuiz', {id: id})
+    },
     deleteGroup(id) {
       this.socket.emit('deleteGroup', {id: id})
     }
@@ -77,5 +83,10 @@ export default {
 
 <style lang="scss">
   .config-groups {
+
+    input[type=checkbox] {
+      position: relative;
+      top: 6px;
+    }
   }
 </style>

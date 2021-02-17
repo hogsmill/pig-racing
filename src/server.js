@@ -27,16 +27,33 @@ ON_DEATH(function(signal, err) {
   })
 })
 
-const express = require('express')
-const app = express()
-const http = require('http').createServer(app)
-const io = require('socket.io')(http, {
-  cors: {
-    origins: ['http://localhost:*', 'http://agilesimulations.co.uk'],
-    methods: ['GET', 'POST'],
-    credentials: true
+let httpServer
+let io
+if (!prod) {
+  const express = require('express')
+  const app = express()
+  httpServer = require('http').createServer(app)
+  io = require('socket.io')(httpServer, {
+    cors: {
+      origins: ['http://localhost:*'],
+      methods: ['GET', 'POST'],
+      credentials: true
+    }
+  })
+} else {
+  const options = {
+    key: fs.readFileSync('/etc/ssl/private/agilesimulations.co.uk.key'),
+    cert: fs.readFileSync('/etc/ssl/certs/07DDA10F5A5AB75BD9E9508BC490D32C.cer')
   }
-})
+  httpServer = require('https').createServer(options)
+  io = require('socket.io')(httpServer, {
+    cors: {
+      origins: ['https://agilesimulations.co.uk'],
+      methods: ['GET', 'POST'],
+      credentials: true
+    }
+  })
+}
 
 const dbStore = require('./store/dbStore.js')
 
@@ -87,6 +104,17 @@ function doDb(fun, data) {
         dbStore.bet(db, io, data, debugOn)
         break
 
+      // Quiz
+      case 'setQuizSlide':
+        dbStore.setQuizSlide(db, io, data, debugOn)
+        break
+      case 'submitAnswer':
+        dbStore.submitAnswer(db, io, data, debugOn)
+        break
+      case 'finishQuizRound':
+        dbStore.finishQuizRound(db, io, data, debugOn)
+        break
+
       // Set up
       case 'loadGroups':
         dbStore.loadGroups(db, io, data, debugOn)
@@ -96,6 +124,9 @@ function doDb(fun, data) {
         break
       case 'deleteGroup':
         dbStore.deleteGroup(db, io, data, debugOn)
+        break
+      case 'setGroupQuiz':
+        dbStore.setGroupQuiz(db, io, data, debugOn)
         break
       case 'addPunter':
         dbStore.addPunter(db, io, data, debugOn)
@@ -109,7 +140,21 @@ function doDb(fun, data) {
       case 'includeRace':
         dbStore.includeRace(db, io, data, debugOn)
         break
-
+      case 'loadSlides':
+        dbStore.loadSlides(db, io, data, debugOn)
+        break
+      case 'setNoOfRounds':
+       dbStore.setNoOfRounds(db, io, data, debugOn)
+        break
+      case 'putSlideInRound':
+        dbStore.putSlideInRound(db, io, data, debugOn)
+        break
+      case 'deleteSlideFromRound':
+        dbStore.deleteSlideFromRound(db, io, data, debugOn)
+        break
+      case 'setAnswerCorrect':
+        dbStore.setAnswerCorrect(db, io, data, debugOn)
+        break
       default:
         console.log('Unknown function "' + fun + '"')
     }
@@ -172,6 +217,18 @@ io.on('connection', (socket) => {
 
   socket.on('finish', (data) => { doDb('finish', data) })
 
+  socket.on('showQuizRound', (data) => { emit('showQuizRound', data) })
+
+  socket.on('setQuizSlide', (data) => { doDb('setQuizSlide', data) })
+
+  socket.on('submitAnswer', (data) => { doDb('submitAnswer', data) })
+
+  socket.on('finishQuizRound', (data) => {
+    emit('hideQuizRound', false)
+    doDb('finishQuizRound', data)
+  })
+
+
   // Setup
   socket.on('setGroup', (data) => { doDb('setGroup', data) })
 
@@ -181,6 +238,8 @@ io.on('connection', (socket) => {
 
   socket.on('deleteGroup', (data) => { doDb('deleteGroup', data) })
 
+  socket.on('setGroupQuiz', (data) => { doDb('setGroupQuiz', data) })
+
   socket.on('addPunter', (data) => { doDb('addPunter', data) })
 
   socket.on('toggleIncludePunter', (data) => { doDb('toggleIncludePunter', data) })
@@ -188,10 +247,20 @@ io.on('connection', (socket) => {
   socket.on('deletePunter', (data) => { doDb('deletePunter', data) })
 
   socket.on('includeRace', (data) => { doDb('includeRace', data) })
+
+  socket.on('setNoOfRounds', (data) => { doDb('setNoOfRounds', data) })
+
+  socket.on('loadSlides', (data) => { doDb('loadSlides', data) })
+
+  socket.on('putSlideInRound', (data) => { doDb('putSlideInRound', data) })
+
+  socket.on('deleteSlideFromRound', (data) => { doDb('deleteSlideFromRound', data) })
+
+  socket.on('setAnswerCorrect', (data) => { doDb('setAnswerCorrect', data) })
 })
 
 const port = process.argv[2] || 3010
 
-http.listen(port, () => {
+httpServer.listen(port, () => {
   console.log('Listening on *:' + port)
 })

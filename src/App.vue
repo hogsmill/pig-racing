@@ -20,6 +20,12 @@
         <button class="btn btn-primary btn-sm" @click="nextRace()">
           Next Race
         </button>
+        <button class="btn btn-primary btn-sm" v-if="!quiz" @click="showQuizRound()">
+          Next Quiz Round
+        </button>
+        <button class="btn btn-primary btn-sm" v-if="quiz" @click="finishQuizRound()">
+          Finish Quiz Round
+        </button>
         <button class="btn btn-primary btn-sm" @click="restart()">
           Restart
         </button>
@@ -34,11 +40,11 @@
 
       <Players v-if="!demo" />
 
-      <div v-if="isHost">
+      <div v-if="isHost && !quiz">
         Watching Betting: {{ Object.keys(watchingBetting).length }}
       </div>
 
-      <div class="container">
+      <div v-if="!quiz" class="container">
         <div :class="{hidden : !running }" class="video">
           <div v-if="isHost" class="controls">
             <button class="btn btn-warning btn-sm" @click="stopTest()">
@@ -67,6 +73,8 @@
 
         <Demo v-if="demo" :socket="socket" />
       </div>
+
+      <Quiz v-if="quiz" :socket="socket" />
     </div>
   </div>
 </template>
@@ -81,6 +89,7 @@ import SetUp from './components/SetUp.vue'
 import Players from './components/Players.vue'
 import Races from './components/Races.vue'
 import Winnings from './components/Winnings.vue'
+import Quiz from './components/Quiz.vue'
 import Demo from './components/Demo.vue'
 
 export default {
@@ -91,6 +100,7 @@ export default {
     Players,
     Races,
     Winnings,
+    Quiz,
     Demo
   },
   computed: {
@@ -118,6 +128,9 @@ export default {
     running() {
       return this.$store.getters.getRunning
     },
+    quiz() {
+      return this.$store.getters.getQuiz
+    },
     playing() {
       return this.$store.getters.getPlaying
     },
@@ -129,11 +142,12 @@ export default {
     }
   },
   created() {
-    let host = '77.68.122.69'
+    let connStr
     if (location.hostname == 'localhost') {
-      host = 'localhost'
+      connStr = 'http://localhost:3010'
+    } else {
+      connStr = 'https://agilesimulations.co.uk:3010'
     }
-    const connStr = 'http://' + host + ':3010'
     console.log('Connecting to: ' + connStr)
     this.socket = io(connStr)
 
@@ -164,12 +178,28 @@ export default {
       this.$store.dispatch('updateGroups', data)
     })
 
+    this.socket.on('showQuizRound', () => {
+      this.$store.dispatch('showQuizRound', true)
+    })
+
+    this.socket.on('hideQuizRound', () => {
+      this.$store.dispatch('showQuizRound', false)
+    })
+
+    this.socket.on('setQuizSlide', (data) => {
+      this.$store.dispatch('setQuizSlide', data)
+    })
+
     this.socket.on('backToBetting', () => {
       this.$store.dispatch('updateRunning', false)
     })
 
     this.socket.on('watchingBetting', (data) => {
       this.$store.dispatch('updateWatchingBetting', data)
+    })
+
+    this.socket.on('loadSlides', (data) => {
+      this.$store.dispatch('updateSlides', data)
     })
 
     this.socket.emit('loadRaces')
@@ -228,6 +258,12 @@ export default {
     nextRace() {
       this.socket.emit('setNextRace', {groupId: this.currentGroup.id})
     },
+    showQuizRound() {
+      this.socket.emit('showQuizRound', {groupId: this.currentGroup.id})
+    },
+    finishQuizRound() {
+      this.socket.emit('finishQuizRound', {groupId: this.currentGroup.id})
+    },
     restart() {
       this.socket.emit('restart', {groupId: this.currentGroup.id})
     },
@@ -268,11 +304,7 @@ export default {
   .places img { width: 20px; }
 
   .winnings { width: 48%; display: inline-block; margin-right: 0; }
-  .punter { width: 15%; display: inline-block; margin: 6px 0; }
   .avatar { width: 20px; height: 20px; margin-right: 2px; }
-  .punter-span { margin-right: 6px; }
-  .punter-winnings { width: 80%; display: inline-block; margin: 6px 0; }
-  .total { background-color: green; color: #fff; }
 
   .video { vertical-align: middle; }
 
