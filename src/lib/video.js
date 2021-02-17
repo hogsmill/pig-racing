@@ -3,12 +3,12 @@ const Video = {
 
   setTestVideo: function() {
     const video = document.getElementById('video')
-    video.src = 'http://agilesimulations.co.uk/pig-racing/video/TestVideo.mp4'
+    video.src = 'https://agilesimulations.co.uk/pig-racing/video/TestVideo.mp4'
     video.load()
   },
   loadVideo: function(race) {
     const video = document.getElementById('video')
-    video.src = 'http://agilesimulations.co.uk/pig-racing/video/' + race.video
+    video.src = 'https://agilesimulations.co.uk/pig-racing/video/' + race.video
     video.load()
   },
   setVideoTime: function(t) {
