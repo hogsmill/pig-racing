@@ -151,7 +151,7 @@ export default {
 </script>
 
 <style>
-  .initials { background-color: #ccc; color: #fff; width: 24px; height: 24px; display: inline-block;  font-size: 76%; line-height: 2; }
+  .initials { background-color: #007bff; color: #fff; width: 24px; height: 24px; display: inline-block;  font-size: 76%; line-height: 2; }
   .medal { height: 20px; width: 20px; }
   .gold { color: #fff; background-color: goldenrod; }
   .silver { color: #444; background-color: #ddd; }
