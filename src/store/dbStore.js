@@ -61,6 +61,7 @@ module.exports = {
         for (let i = 0; i < res.punters.length; i++) {
           const punter = res.punters[i]
           punter.winnings = 0
+          punter.quizScore = 0
           punters.push(punter)
         }
         const quizConfig = res.quizConfig
