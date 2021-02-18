@@ -32,13 +32,26 @@
                 </option>
                 <option v-for="(punter, pindex) in editingGroupPunters" :key="pindex" :selected="punter.id == selectedPunterId" :value="punter.id">
                   {{ punter.name }}
+                  <span v-if="punter.marked">
+                    *
+                  </span>
                 </option>
               </select>
             </td>
           </tr>
           <tr v-if="editingGroupId && selectedPunterId">
             <td>
-              Correct: {{ correct() }} / {{ slides.length }}
+              <div>
+                Correct: {{ correct() }} / {{ slides.length }}
+              </div>
+              <div>
+                <button class="btn btn-primary btn-sm" @click="setAsMarked()">
+                  Set as Marked
+                </button>
+                <span v-if="marked()">
+                  (<i>Marked</i>)
+                </span>
+              </div>
             </td>
           </tr>
           <tr v-if="editingGroupId && selectedPunterId">
@@ -66,8 +79,8 @@
                       {{ slide.slide.number }}
                     </td>
                     <td>
-                      Right <input type="radio" :name="'answer-' + slide.slide.number" :checked="slide.slide.correct" @click="setAnswerCorrect(slide.slide.number, true)">
-                      Wrong <input type="radio" :name="'answer-' + slide.slide.number" :checked="!slide.slide.correct" @click="setAnswerCorrect(slide.slide.number, false)">
+                      Right <input type="radio" :name="'answer-' + slide.slide.number" :checked="slide.slide.correct == true" @click="setAnswerCorrect(slide.slide.number, true)">
+                      Wrong <input type="radio" :name="'answer-' + slide.slide.number" :checked="slide.slide.correct == false" @click="setAnswerCorrect(slide.slide.number, false)">
                     </td>
                     <td>
                       {{ slide.slide.title }}
@@ -146,6 +159,19 @@ export default {
     },
     setAnswerCorrect(slide, value) {
       this.socket.emit('setAnswerCorrect', {groupId: this.editingGroupId, punterId: this.selectedPunterId, slide: slide, value: value})
+    },
+    marked() {
+      const id = this.selectedPunterId
+      let marked = false
+      if (id) {
+        marked = this.editingGroupPunters.find(function(p) {
+          return p.id == id
+        }).marked
+      }
+      return marked
+    },
+    setAsMarked() {
+      this.socket.emit('setAsMarked', {groupId: this.editingGroupId, punterId: this.selectedPunterId})
     },
     correct() {
       const self = this

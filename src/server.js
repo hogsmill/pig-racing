@@ -155,6 +155,9 @@ function doDb(fun, data) {
       case 'setAnswerCorrect':
         dbStore.setAnswerCorrect(db, io, data, debugOn)
         break
+      case 'setAsMarked':
+        dbStore.setAsMarked(db, io, data, debugOn)
+        break
       default:
         console.log('Unknown function "' + fun + '"')
     }
@@ -257,6 +260,8 @@ io.on('connection', (socket) => {
   socket.on('deleteSlideFromRound', (data) => { doDb('deleteSlideFromRound', data) })
 
   socket.on('setAnswerCorrect', (data) => { doDb('setAnswerCorrect', data) })
+
+  socket.on('setAsMarked', (data) => { doDb('setAsMarked', data) })
 })
 
 const port = process.argv[2] || 3010

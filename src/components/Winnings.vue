@@ -50,11 +50,9 @@ export default {
       return this.$store.getters.getRaces
     },
     racePunters() {
-      console.log(this.$store.getters.getRaceSortedPunters)
       return this.$store.getters.getRaceSortedPunters
     },
     quizPunters() {
-      console.log(this.$store.getters.getQuizSortedPunters)
       return this.$store.getters.getQuizSortedPunters
     },
     currentGroup() {
