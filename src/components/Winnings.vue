@@ -28,7 +28,7 @@
             {{ punter['name'] }}
           </div>
           <div class="punter-winnings">
-            <div class="total-quiz rounded" :style="{ width: getQuizWidth(punter['winnings']) }">
+            <div class="total-quiz rounded" :style="{ width: getQuizWidth(punter['quizScore']) }">
               {{ punter['quizScore'] }}
             </div>
           </div>
@@ -66,7 +66,7 @@ export default {
       return n / this.races.length * 10 + '%'
     },
     getQuizWidth(n) {
-      return n * 26 + 'px'
+      return parseInt(n * 26) + 'px'
     },
     setDisplay(display) {
       this.display = display
