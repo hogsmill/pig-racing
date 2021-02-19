@@ -64,11 +64,15 @@ export default {
     },
     setPlayer(n) {
       const id = document.getElementById('name-select-' + n).value
-      const player = this.punters.find(function(p) {
-        return p.id == id
-      })
-      localStorage.setItem('pr-player-' + n, JSON.stringify(player))
-      this.$store.dispatch('updatePlayer' + n, player)
+      if (id) {
+        player = this.punters.find(function(p) {
+          return p.id == id
+        })
+        localStorage.setItem('pr-player-' + n, JSON.stringify(player))
+        this.$store.dispatch('updatePlayer' + n, player)
+      } else {
+        localStorage.removeItem('pr-player-' + n)
+      }
     }
   }
 }
