@@ -41,7 +41,8 @@
       <Players v-if="!demo" />
 
       <div v-if="isHost && !quiz">
-        Watching Betting: {{ Object.keys(watchingBetting).length }}
+        Watching Betting: {{ Object.keys(watching.betting).length }},
+        Watching Racing: {{ Object.keys(watching.racing).length }}
       </div>
 
       <div v-if="!quiz" class="container">
@@ -119,8 +120,8 @@ export default {
     demoRaceFinished() {
       return this.$store.getters.getDemoRaceFinished
     },
-    watchingBetting() {
-      return this.$store.getters.getWatchingBetting
+    watching() {
+      return this.$store.getters.getWatching
     },
     currentRace() {
       return this.$store.getters.getCurrentRace
@@ -166,6 +167,8 @@ export default {
         if (player) {
           player = JSON.parse(player)
           self.$store.dispatch('updatePlayer' + i, player)
+        } else {
+          self.$store.dispatch('updatePlayer' + i, {})
         }
       }
     }
@@ -194,8 +197,8 @@ export default {
       this.$store.dispatch('updateRunning', false)
     })
 
-    this.socket.on('watchingBetting', (data) => {
-      this.$store.dispatch('updateWatchingBetting', data)
+    this.socket.on('watching', (data) => {
+      this.$store.dispatch('updateWatching', data)
     })
 
     this.socket.on('loadSlides', (data) => {
@@ -226,12 +229,18 @@ export default {
         this.$store.dispatch('updatePlaying', false)
       }
     })
+
+    const self = this
+    document.getElementById('video').onended = function() {
+      self.socket.emit('watching', {groupId: self.currentGroup.id, field: 'racing', watching: false})
+    }
   },
   methods: {
     playPause() {
       this.socket.emit('playPause')
     },
     testVideo() {
+      const self = this
       this.socket.emit('testVideo')
     },
     testVideoFrom() {

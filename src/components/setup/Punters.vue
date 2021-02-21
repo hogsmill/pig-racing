@@ -25,6 +25,22 @@
           </tr>
           <tr>
             <td>
+              Max number of people per browser
+              <select id="max-punters" @change="setMaxPunters()">
+                <option :selected="editingGroupMaxPunters == 1 || !editingGroupMaxPunters">
+                  1
+                </option>
+                <option :selected="editingGroupMaxPunters == 2">
+                  2
+                </option>
+                <option :selected="editingGroupMaxPunters == 3">
+                  3
+                </option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>
               New Punter <input type="text" class="new-group" id="new-punter">
               <button @click="addPunter()" :disabled="!editingGroupId">
                 Add
@@ -87,6 +103,9 @@ export default {
     },
     editingGroupPunters() {
       return this.$store.getters.getEditingGroupPunters
+    },
+    editingGroupMaxPunters() {
+      return this.$store.getters.getEditingGroupMaxPunters
     }
   },
   methods: {
@@ -105,6 +124,10 @@ export default {
         this.socket.emit('addPunter', {groupId: this.editingGroupId, punter: punter})
         document.getElementById('new-punter').value = ''
       }
+    },
+    setMaxPunters() {
+      const n = document.getElementById('max-punters').value
+      this.socket.emit('setMaxPunters', {groupId: this.editingGroupId, value: n})
     },
     deletePunter(id) {
       this.socket.emit('deletePunter', {groupId: this.editingGroupId, id: id})

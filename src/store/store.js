@@ -30,7 +30,10 @@ export const store = new Vuex.Store({
     quiz: false,
     quizConfig: {},
     slides: [],
-    watchingBetting: {},
+    watching: {
+      betting: 0,
+      racing: 0
+    },
     player1: {},
     player2: {},
     player3: {},
@@ -56,8 +59,8 @@ export const store = new Vuex.Store({
     getDemoRaceFinished: (state) => {
       return state.demoRaceFinished
     },
-    getWatchingBetting: (state) => {
-      return state.watchingBetting
+    getWatching: (state) => {
+      return state.watching
     },
     getCurrentRace: (state) => {
       const current = currentGroup(state)
@@ -65,6 +68,10 @@ export const store = new Vuex.Store({
     },
     getRunning: (state) => {
       return state.running
+    },
+    getCombineScores: (state) => {
+      const current = currentGroup(state)
+      return current.combineScores
     },
     getQuiz: (state) => {
       return state.quiz
@@ -113,6 +120,10 @@ export const store = new Vuex.Store({
     getCurrentGroup: (state) => {
       return currentGroup(state)
     },
+    getMaxPunters: (state) => {
+      const group = currentGroup(state)
+      return group ? group.maxPunters : null
+    },
     getPunters: (state) => {
       return state.punters.sort((a, b) => (a.name > b.name) ? 1 : -1)
     },
@@ -134,9 +145,26 @@ export const store = new Vuex.Store({
       }
       return punters.sort((a, b) => (b.quizScore >= a.quizScore) ? 1 : -1)
     },
+    getBothSortedPunters: (state) => {
+      const punters = []
+      for (let i = 0; i < state.punters.length; i++) {
+        if (state.punters[i].winnings > 0 || state.punters[i].quizScore > 0) {
+          punters.push(state.punters[i])
+        }
+      }
+      return punters.sort(function(a, b) {
+        const scoreA = (a.winnings ? a.winnings : 0) + (a.quizScore ? a.quizScore : 0)
+        const scoreB = (b.winnings ? b.winnings : 0) + (b.quizScore ? b.quizScore :  0)
+        return scoreB >= scoreA ? 1 : -1
+      })
+    },
     getRaces: (state) => {
       const current = currentGroup(state)
       return current ? current.races : []
+    },
+    getDoublePointsOnLastRace: (state) => {
+      const current = currentGroup(state)
+      return current ? current.doublePointsOnLastRace : []
     },
     getEditingGroupId: (state) => {
       return state.editingGroupId
@@ -152,6 +180,20 @@ export const store = new Vuex.Store({
     getEditingGroupInclude: (state) => {
       const current = currentEditingGroup(state)
       return current ? current.include : {}
+    },
+    getEditingGroupMaxPunters: (state) => {
+      const current = currentEditingGroup(state)
+      return current ? current.maxPunters : null
+    },
+    getNoOfSelectedSlides: (state) => {
+      const current = currentEditingGroup(state)
+      let n = 0
+      if (current.quizConfig) {
+        for (let i = 0; i < current.quizConfig.rounds.length; i++) {
+          n = n + current.quizConfig.rounds[i].length
+        }
+      }
+      return n
     }
   },
   mutations: {
@@ -175,8 +217,8 @@ export const store = new Vuex.Store({
     updatePlaying: (state, payload) => {
       state.playing = payload
     },
-    updateWatchingBetting: (state, payload) => {
-      state.watchingBetting = payload
+    updateWatching: (state, payload) => {
+      state.watching = payload
     },
     showQuizRound: (state, payload) => {
       state.quiz = payload
@@ -247,8 +289,8 @@ export const store = new Vuex.Store({
     updatePlaying: ({ commit }, payload) => {
       commit('updatePlaying', payload)
     },
-    updateWatchingBetting: ({ commit }, payload) => {
-      commit('updateWatchingBetting', payload)
+    updateWatching: ({ commit }, payload) => {
+      commit('updateWatching', payload)
     },
     showQuizRound: ({ commit }, payload) => {
       commit('showQuizRound', payload)

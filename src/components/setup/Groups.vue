@@ -14,11 +14,23 @@
       <td>
         <table>
           <tr>
-            <td colspan="2">
+            <td colspan="3">
               New Group <input type="text" class="new-group" id="new-group">
               <button @click="addGroup()">
                 Add
               </button>
+            </td>
+          </tr>
+          <tr>
+            <td />
+            <td>
+              Double points on last race?
+            </td>
+            <td>
+              Include quiz?
+            </td>
+            <td>
+              Combine scores?
             </td>
           </tr>
           <tr v-for="(group, index) in groups" :key="index">
@@ -27,8 +39,14 @@
               <i @click="deleteGroup(group.id)" :title="'Delete ' + group.group" class="fas fa-trash-alt" />
               {{ group.group }}
             </td>
-            <td>
-              <input type="checkbox" :checked="group.showQuiz" @click="setGroupQuiz(group.id)"> Include quiz?
+            <td class="center">
+              <input type="checkbox" :checked="group.doublePointsOnLastRace" @click="setGroupDoublePointsOnLastRace(group.id)">
+            </td>
+            <td class="center">
+              <input type="checkbox" :checked="group.showQuiz" @click="setGroupQuiz(group.id)">
+            </td>
+            <td class="center">
+              <input type="checkbox" :checked="group.combineScores" :disabled="!group.showQuiz" @click="setGroupCombineScores(group.id)">
             </td>
           </tr>
         </table>
@@ -71,8 +89,14 @@ export default {
     setGroup(id) {
       this.socket.emit('setGroup', {id: id})
     },
+    setGroupDoublePointsOnLastRace(id) {
+      this.socket.emit('setGroupDoublePointsOnLastRace', {id: id})
+    },
     setGroupQuiz(id) {
       this.socket.emit('setGroupQuiz', {id: id})
+    },
+    setGroupCombineScores(id) {
+      this.socket.emit('setGroupCombineScores', {id: id})
     },
     deleteGroup(id) {
       this.socket.emit('deleteGroup', {id: id})

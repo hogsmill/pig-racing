@@ -1,8 +1,9 @@
 <template>
   <div>
     <div class="name-select">
-      Player 1:
-      <select id="name-select-1" class="form-control" @change="setPlayer(1)">
+      <span v-if="!maxPunters || maxPunters == 1">Select Name: </span>
+      <span v-if="maxPunters > 1">Player 1: </span>
+      <select id="name-select-1" class="form-control" @change="setPlayer(1)" :disabled="currentRace > -1">
         <option value="">
           -- Select --
         </option>
@@ -11,9 +12,9 @@
         </option>
       </select>
     </div>
-    <div class="name-select">
+    <div v-if="maxPunters > 1" class="name-select">
       Player 2:
-      <select id="name-select-2" class="form-control" @change="setPlayer(2)">
+      <select id="name-select-2" class="form-control" @change="setPlayer(2)" :disabled="currentRace > -1">
         <option value="">
           -- Select --
         </option>
@@ -22,9 +23,9 @@
         </option>
       </select>
     </div>
-    <div class="name-select">
+    <div v-if="maxPunters > 2" class="name-select">
       Player 3:
-      <select id="name-select-3" class="form-control" @change="setPlayer(3)">
+      <select id="name-select-3" class="form-control" @change="setPlayer(3)" :disabled="currentRace > -1">
         <option value="">
           -- Select --
         </option>
@@ -44,8 +45,14 @@ export default {
     }
   },
   computed: {
+    currentRace() {
+      return this.$store.getters.getCurrentRace
+    },
     punters() {
       return this.$store.getters.getPunters
+    },
+    maxPunters() {
+      return this.$store.getters.getMaxPunters
     },
     player1() {
       return this.$store.getters.getPlayer1
@@ -65,7 +72,7 @@ export default {
     setPlayer(n) {
       const id = document.getElementById('name-select-' + n).value
       if (id) {
-        player = this.punters.find(function(p) {
+        const player = this.punters.find(function(p) {
           return p.id == id
         })
         localStorage.setItem('pr-player-' + n, JSON.stringify(player))

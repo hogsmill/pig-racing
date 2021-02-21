@@ -196,5 +196,15 @@ module.exports = {
       }
     }
     return nextRace
+  },
+
+  lastRace: function(races, race) {
+    let lastRace
+    for (let i = 0; i < races.length; i++) {
+      if (races[i].include) {
+        lastRace = races[i]
+      }
+    }
+    return lastRace.name
   }
 }

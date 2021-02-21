@@ -13,11 +13,10 @@
       <span v-if="currentRoundNumber == noOfRounds">(Last Round)</span>
       <span v-if="currentSlideNumber == currentRound.length">(Last Slide)</span>
     </div>
-    <div v-if="!isHost" class="answer-div">
+    <div v-if="!isHost && !submitted" class="answer-div">
       <input type="text" id="answer" class="form-control answer">
-      Submit Answer for:
       <button v-if="player1.id" class="btn btn-primary btn-sm" @click="submitAnswer(player1)">
-        {{ player1.initials }}
+        Submit Answer for {{ player1.initials }}
       </button>
       <button v-if="player2.id" class="btn btn-primary btn-sm" @click="submitAnswer(player2)">
         {{ player2.initials }}
@@ -28,6 +27,11 @@
     </div>
     <div class="quiz-pic">
       <div id="slide" :class="'pic-' + currentSlide.number" />
+      <div v-if="!isHost && submitted" class="answered-div">
+        <div class="rounded">
+          Your answer: '{{ answer }}'
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -39,7 +43,9 @@ export default {
   ],
   data() {
     return {
-      slide: 1
+      slide: 1,
+      submitted: false,
+      answer: ''
     }
   },
   computed: {
@@ -80,6 +86,8 @@ export default {
     },
     next() {
       this.socket.emit('setQuizSlide', {groupId: this.currentGroup.id, slide: this.currentSlideNumber + 1})
+      this.submitted = false
+      this.answer = ''
     },
     goTo() {
       const n = document.getElementById('go-to').value
@@ -87,8 +95,11 @@ export default {
     },
     submitAnswer(player) {
       const answer = document.getElementById('answer').value
-      this.socket.emit('submitAnswer', {groupId: this.currentGroup.id, punterId: player.id, slide: this.currentSlide, answer: answer})
-
+      if (confirm('Is "' + answer + '" your final answer?')) {
+        this.socket.emit('submitAnswer', {groupId: this.currentGroup.id, punterId: player.id, slide: this.currentSlide, answer: answer})
+        this.submitted = true
+        this.answer = answer
+      }
     }
   }
 }
@@ -140,6 +151,23 @@ export default {
     .quiz-pic {
       padding: 6px;
       background-color: #000;
+      position: relative;
+
+      .answered-div {
+        position: absolute;
+        top: 100px;
+        width: 100%;
+
+        div {
+          background-color: #fff;
+          z-index: 10;
+          padding: 24px;
+          margin: 0 auto;
+          width: 30%;
+          font-size: x-large;
+          box-shadow: 5px 5px 5px #444;
+        }
+      }
 
       #slide {
         margin: 0 auto;;

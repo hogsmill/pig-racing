@@ -122,11 +122,20 @@ function doDb(fun, data) {
       case 'addGroup':
         dbStore.addGroup(db, io, data, debugOn)
         break
+      case 'setMaxPunters':
+        dbStore.setMaxPunters(db, io, data, debugOn)
+        break
       case 'deleteGroup':
         dbStore.deleteGroup(db, io, data, debugOn)
         break
+      case 'setGroupDoublePointsOnLastRace':
+        dbStore.setGroupDoublePointsOnLastRace(db, io, data, debugOn)
+        break
       case 'setGroupQuiz':
         dbStore.setGroupQuiz(db, io, data, debugOn)
+        break
+      case 'setGroupCombineScores':
+        dbStore.setGroupCombineScores(db, io, data, debugOn)
         break
       case 'addPunter':
         dbStore.addPunter(db, io, data, debugOn)
@@ -164,14 +173,24 @@ function doDb(fun, data) {
   })
 }
 
-const watching = {}
-function watchingBetting(data, socketId) {
-  if (data.watchingBetting) {
-    watching[socketId] = true
+let watching = {
+  betting: {},
+  racing: {}
+}
+function watchingVideo(data, socketId) {
+  if (data.watching) {
+    watching[data.field][socketId] = true
   } else {
-    delete watching[socketId]
+    delete watching[data.field][socketId]
   }
-  emit('watchingBetting', watching)
+  emit('watching', watching)
+}
+
+function clearWatching() {
+  watching = {
+    betting: {},
+    racing: {}
+  }
 }
 
 io.on('connection', (socket) => {
@@ -200,9 +219,12 @@ io.on('connection', (socket) => {
 
   socket.on('setNextRace', (data) => { doDb('setNextRace', data) })
 
-  socket.on('restart', (data) => { doDb('restart', data) })
+  socket.on('restart', (data) => {
+    doDb('restart', data)
+    clearWatching()
+  })
 
-  socket.on('watchingBetting', (data) => { watchingBetting(data, socket.id) })
+  socket.on('watching', (data) => { watchingVideo(data, socket.id) })
 
   socket.on('bet', (data) => { doDb('bet', data) })
 
@@ -231,7 +253,6 @@ io.on('connection', (socket) => {
     doDb('finishQuizRound', data)
   })
 
-
   // Setup
   socket.on('setGroup', (data) => { doDb('setGroup', data) })
 
@@ -239,9 +260,15 @@ io.on('connection', (socket) => {
 
   socket.on('addGroup', (data) => { doDb('addGroup', data) })
 
+  socket.on('setMaxPunters', (data) => { doDb('setMaxPunters', data) })
+
   socket.on('deleteGroup', (data) => { doDb('deleteGroup', data) })
 
+  socket.on('setGroupDoublePointsOnLastRace', (data) => { doDb('setGroupDoublePointsOnLastRace', data) })
+
   socket.on('setGroupQuiz', (data) => { doDb('setGroupQuiz', data) })
+
+  socket.on('setGroupCombineScores', (data) => { doDb('setGroupCombineScores', data) })
 
   socket.on('addPunter', (data) => { doDb('addPunter', data) })
 
@@ -253,7 +280,7 @@ io.on('connection', (socket) => {
 
   socket.on('setNoOfRounds', (data) => { doDb('setNoOfRounds', data) })
 
-  socket.on('loadSlides', (data) => { doDb('loadSlides', data) })
+  socket.on('loadSlides', () => { doDb('loadSlides') })
 
   socket.on('putSlideInRound', (data) => { doDb('putSlideInRound', data) })
 

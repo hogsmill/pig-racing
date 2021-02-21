@@ -9,7 +9,7 @@ function removeBet(bets, punter) {
   return newBets
 }
 
-function placePoints(place) {
+function placePoints(place, double) {
   let points = 0
   switch(place) {
     case 1:
@@ -25,7 +25,7 @@ function placePoints(place) {
       points = 1
       break
   }
-  return points
+  return double ? points * 2 : points
 }
 
 module.exports = {
@@ -52,7 +52,7 @@ module.exports = {
     return newRaces
   },
 
-  calculateWinnings: function(punters, races) {
+  calculateWinnings: function(punters, races, lastRace, doublePointsOnLastRace) {
     const newPunters = []
     for (let i = 0; i < punters.length; i++) {
       const punter = punters[i]
@@ -62,7 +62,8 @@ module.exports = {
           const race = races[j]
           for (let k = 0; k < race.pigs.length; k++) {
             const pig = race.pigs[k]
-            const points = placePoints(pig.place)
+            const double = doublePointsOnLastRace && race.name == lastRace
+            const points = placePoints(pig.place, double)
             for (let l = 0; l < pig.bets.length; l++) {
               if (pig.bets[l].id == punter.id) {
                 winnings = winnings + points

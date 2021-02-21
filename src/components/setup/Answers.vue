@@ -32,9 +32,9 @@
                 </option>
                 <option v-for="(punter, pindex) in editingGroupPunters" :key="pindex" :selected="punter.id == selectedPunterId" :value="punter.id">
                   {{ punter.name }}
-                  <span v-if="punter.marked">
-                    *
-                  </span>
+                  {{ marked(punter.quizAnswers) }} / {{ punter.quizAnswers ? punter.quizAnswers.length : 0 }}
+                  <b v-if="allMarked(punter.quizAnswers)" class="tick">&#10003;</b>
+                  <b v-if="!allMarked(punter.quizAnswers)" class="cross">&#10007;</b>
                 </option>
               </select>
             </td>
@@ -42,15 +42,7 @@
           <tr v-if="editingGroupId && selectedPunterId">
             <td>
               <div>
-                Correct: {{ correct() }} / {{ slides.length }}
-              </div>
-              <div>
-                <button class="btn btn-primary btn-sm" @click="setAsMarked()">
-                  Set as Marked
-                </button>
-                <span v-if="marked()">
-                  (<i>Marked</i>)
-                </span>
+                Correct: {{ correct() }} / {{ noOfSelectedSlides }}
               </div>
             </td>
           </tr>
@@ -84,6 +76,7 @@
                     </td>
                     <td>
                       {{ slide.slide.title }}
+                      <i class="fas fa-question-circle" :title="slide.slide.answer" />
                     </td>
                     <td>
                       {{ slide.answer }}
@@ -120,8 +113,8 @@ export default {
     editingGroupPunters() {
       return this.$store.getters.getEditingGroupPunters
     },
-    slides() {
-      return this.$store.getters.getSlides
+    noOfSelectedSlides() {
+      return this.$store.getters.getNoOfSelectedSlides
     },
   },
   methods: {
@@ -134,6 +127,7 @@ export default {
     setEditingGroupId() {
       const groupId = document.getElementById('answers-edit-group-select').value
       this.$store.dispatch('setEditingGroupId', groupId)
+      this.selectedPunterId = null
     },
     punterSlides() {
       const self = this
@@ -160,18 +154,19 @@ export default {
     setAnswerCorrect(slide, value) {
       this.socket.emit('setAnswerCorrect', {groupId: this.editingGroupId, punterId: this.selectedPunterId, slide: slide, value: value})
     },
-    marked() {
-      const id = this.selectedPunterId
-      let marked = false
-      if (id) {
-        marked = this.editingGroupPunters.find(function(p) {
-          return p.id == id
-        }).marked
+    allMarked(slides) {
+      return slides ? this.marked(slides) == slides.length : false
+    },
+    marked(slides) {
+      let marked = 0
+      if (slides) {
+        for (let i = 0; i < slides.length; i++) {
+          if ('correct' in slides[i].slide) {
+            marked = marked + 1
+          }
+        }
       }
       return marked
-    },
-    setAsMarked() {
-      this.socket.emit('setAsMarked', {groupId: this.editingGroupId, punterId: this.selectedPunterId})
     },
     correct() {
       const self = this
@@ -214,6 +209,10 @@ export default {
       input[type=radio] {
         height: 12px;
         margin: 2px 12px 2px 2px;
+      }
+
+      .fa-question-circle {
+        color: green;
       }
     }
   }

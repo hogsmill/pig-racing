@@ -68,7 +68,11 @@ module.exports = {
         const quizConfig = res.quizConfig
         quizConfig.round = 1
         quizConfig.slide = 1
-        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1, watchingBetting: [], quizConfig: quizConfig}}, function(err, res) {
+        const watching = {
+          betting: 0,
+          racing: 0
+        }
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters, currentRace: -1, watching: watching, quizConfig: quizConfig}}, function(err, res) {
           if (err) throw err
           if (res) {
             _loadGroups(db, io)
@@ -137,7 +141,8 @@ module.exports = {
           }
           races.push(race)
         }
-        const punters = betFuns.calculateWinnings(res.punters, races)
+        const lastRace = raceFuns.lastRace(res.races, res.races[res.currentRace])
+        const punters = betFuns.calculateWinnings(res.punters, races, lastRace, res.doublePointsOnLastRace)
         db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {races: races, punters: punters}}, function(err, res) {
           if (err) throw err
           if (res) {
@@ -235,7 +240,10 @@ module.exports = {
       include: raceFuns.include(),
       races: raceFuns.races(),
       currentRace: -1,
-      watchingBetting: 0,
+      watching: {
+        betting: 0,
+        racing: 0
+      },
       quiz: false,
       quizConfig: quizFuns.initialConfig()
     }
@@ -243,6 +251,24 @@ module.exports = {
       if (err) throw err
       if (res) {
         _loadGroups(db, io)
+      }
+    })
+  },
+
+  setMaxPunters: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setMaxPunters', data) }
+
+    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        res.maxPunters = data.value
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {maxPunters: data.value}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
       }
     })
   },
@@ -283,6 +309,24 @@ module.exports = {
     })
   },
 
+  setGroupDoublePointsOnLastRace: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setGroupDoublePointsOnLastRace', data) }
+
+    db.collection('pigRacing').findOne({id: data.id}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const doublePointsOnLastRace = !res.doublePointsOnLastRace
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {doublePointsOnLastRace: doublePointsOnLastRace}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
   setGroupQuiz: function(db, io, data, debugOn) {
 
     if (debugOn) { console.log('setGroupQuiz', data) }
@@ -292,6 +336,24 @@ module.exports = {
       if (res) {
         const showQuiz = !res.showQuiz
         db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {showQuiz: showQuiz}}, function(err, res) {
+          if (err) throw err
+          if (res) {
+            _loadGroups(db, io)
+          }
+        })
+      }
+    })
+  },
+
+  setGroupCombineScores: function(db, io, data, debugOn) {
+
+    if (debugOn) { console.log('setGroupCombineScores', data) }
+
+    db.collection('pigRacing').findOne({id: data.id}, function(err, res) {
+      if (err) throw err
+      if (res) {
+        const combineScores = !res.combineScores
+        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {combineScores: combineScores}}, function(err, res) {
           if (err) throw err
           if (res) {
             _loadGroups(db, io)
@@ -401,7 +463,7 @@ module.exports = {
       if (err) throw err
       if (res) {
         const quizConfig = res.quizConfig
-        const rounds = quizConfig.rounds
+        let rounds = quizConfig.rounds
         if (rounds.length < data.noOfRounds) {
           for (let i = rounds.length; i < data.noOfRounds; i++) {
             rounds.push([])
@@ -421,9 +483,9 @@ module.exports = {
     })
   },
 
-  loadSlides: function(db, io, data, debugOn) {
+  loadSlides: function(db, io, debugOn) {
 
-    if (debugOn) { console.log('putSlideInRound', data) }
+    if (debugOn) { console.log('loadSlides') }
 
     io.emit('loadSlides', quizFuns.slides())
   },

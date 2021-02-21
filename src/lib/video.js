@@ -27,7 +27,7 @@ const Video = {
     const timeUpdateFunction = function() {
       if (this.currentTime >= n) {
           this.pause()
-          socket.emit('watchingBetting', {groupId: groupId, watchingBetting: false})
+          socket.emit('watching', {groupId: groupId, field: 'betting', watching: false})
           this.removeEventListener('timeupdate',timeUpdateFunction)
       }
     }

@@ -94,7 +94,7 @@ export default {
           video.playVideo()
         }, 1000)
         this.$store.dispatch('updatePlaying', true)
-        this.socket.emit('watchingBetting', {groupId: this.currentGroup.id, watchingBetting: true})
+        this.socket.emit('watching', {groupId: this.currentGroup.id, field: 'betting', watching: true})
         video.pauseVideoAt(110, this.socket, this.currentGroup.id)
       }
     })
@@ -105,6 +105,7 @@ export default {
       window.setTimeout(function() {
         video.playVideo()
       }, 1000)
+      this.socket.emit('watching', {groupId: this.currentGroup.id, field: 'racing', watching: true})
       this.$store.dispatch('updatePlaying', false)  // Why?
     })
 
