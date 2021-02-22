@@ -27,6 +27,7 @@ export const store = new Vuex.Store({
     currentRace: -1,
     running: false,
     playing: false,
+    watchingBetting: false,
     quiz: false,
     quizConfig: {},
     slides: [],
@@ -61,6 +62,9 @@ export const store = new Vuex.Store({
     },
     getWatching: (state) => {
       return state.watching
+    },
+    getWatchingBetting: (state) => {
+      return state.watchingBetting
     },
     getCurrentRace: (state) => {
       const current = currentGroup(state)
@@ -154,7 +158,7 @@ export const store = new Vuex.Store({
       }
       return punters.sort(function(a, b) {
         const scoreA = (a.winnings ? a.winnings : 0) + (a.quizScore ? a.quizScore : 0)
-        const scoreB = (b.winnings ? b.winnings : 0) + (b.quizScore ? b.quizScore :  0)
+        const scoreB = (b.winnings ? b.winnings : 0) + (b.quizScore ? b.quizScore : 0)
         return scoreB >= scoreA ? 1 : -1
       })
     },
@@ -219,6 +223,9 @@ export const store = new Vuex.Store({
     },
     updateWatching: (state, payload) => {
       state.watching = payload
+    },
+    updateWatchingBetting: (state, payload) => {
+      state.watchingBetting = payload
     },
     showQuizRound: (state, payload) => {
       state.quiz = payload
@@ -291,6 +298,9 @@ export const store = new Vuex.Store({
     },
     updateWatching: ({ commit }, payload) => {
       commit('updateWatching', payload)
+    },
+    updateWatchingBetting: ({ commit }, payload) => {
+      commit('updateWatchingBetting', payload)
     },
     showQuizRound: ({ commit }, payload) => {
       commit('showQuizRound', payload)

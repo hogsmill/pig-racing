@@ -14,17 +14,17 @@
             {{ punter['name'] }}
           </div>
           <div class="punter-winnings">
-            <div class="total-races rounded-left-xx" :class="getRounded(punter, 'races')" :style="{ width: getWidth(punter['winnings']) }">
+            <div v-if="punter['winnings'] > 0" class="total-races" :class="getRounded(punter, 'races')" :style="{ width: getWidth(punter['winnings']) }">
               {{ punter['winnings'] }}
             </div>
-            <div class="total-quiz rounded-right-xx" :class="getRounded(punter, 'quiz')" :style="{ width: getWidth(punter['quizScore']) }">
+            <div v-if="punter['quizScore'] > 0" class="total-quiz" :class="getRounded(punter, 'quiz')" :style="{ width: getWidth(punter['quizScore']) }">
               {{ punter['quizScore'] }}
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div v-if="display == 'Race'">
+    <div v-if="!combineScores && display == 'Race'">
       <div v-for="(punter, rIndex) in racePunters" :key="rIndex">
         <div>
           <div class="punter">
@@ -159,20 +159,21 @@ export default {
     display: inline-block;
     margin: 6px 0;
     text-align: left;
-  }
 
-  .total-races {
-    display: inline-block;
-    background-color: green;
-    color: #fff;
-    text-align: center;
-  }
+    div {
+      display: inline-block;
+      color: #fff;
+      text-align: center;
+      min-width: 10px;
 
-  .total-quiz {
-    display: inline-block;
-    background-color: blue;
-    color: #fff;
-    text-align: center;
+      &.total-races {
+        background-color: green;
+      }
+
+      &.total-quiz {
+        background-color: blue;
+      }
+    }
   }
 
 </style>

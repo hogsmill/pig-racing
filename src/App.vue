@@ -57,10 +57,10 @@
             <button class="btn btn-primary btn-sm" @click="playPause()" v-if="playing">
               Pause
             </button>
-            <button class="btn btn-primary btn-sm" @click="backToBetting()">
+            <button class="btn btn-primary btn-sm" :disabled="!watchingBetting" @click="backToBetting()">
               Back to Betting
             </button>
-            <button class="btn btn-primary btn-sm" @click="finish()">
+            <button class="btn btn-primary btn-sm" :disabled="watchingBetting" @click="finish()">
               Finish
             </button>
           </div>
@@ -122,6 +122,9 @@ export default {
     },
     watching() {
       return this.$store.getters.getWatching
+    },
+    watchingBetting() {
+      return this.$store.getters.getWatchingBetting
     },
     currentRace() {
       return this.$store.getters.getCurrentRace
@@ -194,6 +197,7 @@ export default {
     })
 
     this.socket.on('backToBetting', () => {
+      this.$store.dispatch('updateWatchingBetting', false)
       this.$store.dispatch('updateRunning', false)
     })
 
@@ -240,7 +244,6 @@ export default {
       this.socket.emit('playPause')
     },
     testVideo() {
-      const self = this
       this.socket.emit('testVideo')
     },
     testVideoFrom() {

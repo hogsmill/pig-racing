@@ -86,6 +86,7 @@ export default {
     this.socket.on('showPigs', (data) => {
       if (this.raceIndex == data.raceIndex) {
         this.$store.dispatch('updateRunning', true)
+        this.$store.dispatch('updateWatchingBetting', true)
         video.loadVideo(this.races[this.currentRace])
         if (this.currentRace > 0) {
           video.setVideoTime(30)
