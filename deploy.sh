@@ -21,8 +21,6 @@ else
   fi
 fi
 
-fi
-
 npm run build
 rm /var/www/html/$APP/css/*
 rm /var/www/html/$APP/js/*
