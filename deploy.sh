@@ -11,14 +11,6 @@ GIT=`git pull`
 echo $GIT
 if [ "$FORCE" != "true" -a "$GIT" == "Already up to date." ]; then
   exit 0
-else
-  GIT1=`git pull | grep "error: Your local changes to the following files would be overwritten by merge:"`
-  GIT2=`git pull | grep "package-lock.json"`
-  if [ "$GIT1" != "" -a "$GIT2" != "" ]; then
-    echo "Stashing"
-    git stash
-    git pull
-  fi
 fi
 
 npm run build
