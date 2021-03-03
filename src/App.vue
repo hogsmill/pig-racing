@@ -31,11 +31,20 @@
         </button>
       </div>
       <div v-if="demo && running" class="controls">
-        Click
-        <button class="btn btn-primary btn-sm" @click="finishDemoRace()">
-          Finish
-        </button>
-        to go back to the explanation
+        <span>
+          Click
+          <button class="btn btn-primary btn-sm" @click="finishDemoBetting()">
+            Finish
+          </button>
+          to go back to the explanation
+        </span>
+        <span>
+          Click
+          <button class="btn btn-primary btn-sm" @click="finishDemoRace()">
+            Finish
+          </button>
+          to finish watching the race
+        </span>
       </div>
 
       <Players v-if="!demo" />
@@ -285,10 +294,11 @@ export default {
     finish() {
       this.socket.emit('finish', {groupId: this.currentGroup.id})
     },
+    finishDemoBetting() {
+      this.$store.dispatch('updateDemoBetting', false)
+    },
     finishDemoRace() {
-      this.socket.emit('finish', {})
       this.$store.dispatch('updateDemoRaceFinished', true)
-
     }
   }
 }

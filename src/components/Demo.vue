@@ -109,8 +109,7 @@ export default {
     },
     showDemoPigs() {
       this.$store.dispatch('updateDemoRaceFinished', false)
-      this.$store.dispatch('updateCurrentRace', 1)
-      this.socket.emit('showPigs')
+      this.socket.emit('showPigs', {raceIndex: 0})
     },
     runDemoRace: function() {
       this.socket.emit('runDemoRace')

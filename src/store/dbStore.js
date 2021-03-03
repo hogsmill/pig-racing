@@ -17,7 +17,7 @@ function _loadGroups(db, io) {
 
 module.exports = {
 
-  loadRaces: function(db, io, data, debugOn) {
+  loadRaces: function(db, io, debugOn) {
 
     if (debugOn) { console.log('loadRaces') }
 
@@ -25,7 +25,7 @@ module.exports = {
     io.emit('loadRaces', races)
   },
 
-  loadGroups: function(db, io, data, debugOn) {
+  loadGroups: function(db, io, debugOn) {
 
     if (debugOn) { console.log('loadGroups') }
     _loadGroups(db, io)
