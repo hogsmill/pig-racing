@@ -1,14 +1,16 @@
 <template>
   <div>
-    <Groups :socket="socket" />
-    <Punters :socket="socket" />
-    <Races :socket="socket" />
-    <Quizzes :socket="socket" />
-    <Answers :socket="socket" />
+    <Groups />
+    <Punters />
+    <Races />
+    <Quizzes />
+    <Answers />
   </div>
 </template>
 
 <script>
+import bus from '../socket.js'
+
 import Groups from './setup/Groups.vue'
 import Punters from './setup/Punters.vue'
 import Races from './setup/Races.vue'
@@ -23,11 +25,8 @@ export default {
     Quizzes,
     Answers
   },
-  props: [
-    'socket'
-  ],
   created() {
-    this.socket.emit('loadGroups')
+    bus.$emit('sendLoadGroups')
   }
 }
 </script>

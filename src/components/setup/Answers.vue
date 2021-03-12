@@ -93,10 +93,9 @@
 </template>
 
 <script>
+import bus from '../../socket.js'
+
 export default {
-  props: [
-    'socket'
-  ],
   data() {
     return {
       showAnswers: false,
@@ -152,7 +151,7 @@ export default {
       return answer
     },
     setAnswerCorrect(slide, value) {
-      this.socket.emit('setAnswerCorrect', {groupId: this.editingGroupId, punterId: this.selectedPunterId, slide: slide, value: value})
+      bus.$emit('sendSetAnswerCorrect', {groupId: this.editingGroupId, punterId: this.selectedPunterId, slide: slide, value: value})
     },
     allMarked(slides) {
       return slides ? this.marked(slides) == slides.length : false

@@ -46,10 +46,9 @@
 </template>
 
 <script>
+import bus from '../../socket.js'
+
 export default {
-  props: [
-    'socket'
-  ],
   data() {
     return {
       showRaces: false
@@ -78,7 +77,7 @@ export default {
       this.$store.dispatch('setEditingGroupId', groupId)
     },
     includeRace(race) {
-      this.socket.emit('includeRace', {groupId: this.editingGroupId, race: race})
+      bus.$emit('sendIncludeRace', {groupId: this.editingGroupId, race: race})
     }
   }
 }

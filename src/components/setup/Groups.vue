@@ -56,10 +56,9 @@
 </template>
 
 <script>
+import bus from '../../socket.js'
+
 export default {
-  props: [
-    'socket'
-  ],
   data() {
     return {
       showGroups: false
@@ -82,24 +81,24 @@ export default {
       if (!group) {
         alert('Please enter a value')
       } else {
-        this.socket.emit('addGroup', {group: group})
+        bus.$emit('sendAddGroup', {group: group})
         document.getElementById('new-group').value = ''
       }
     },
     setGroup(id) {
-      this.socket.emit('setGroup', {id: id})
+      bus.$emit('sendSetGroup', {id: id})
     },
     setGroupDoublePointsOnLastRace(id) {
-      this.socket.emit('setGroupDoublePointsOnLastRace', {id: id})
+      bus.$emit('sendSetGroupDoublePointsOnLastRace', {id: id})
     },
     setGroupQuiz(id) {
-      this.socket.emit('setGroupQuiz', {id: id})
+      bus.$emit('sendSetGroupQuiz', {id: id})
     },
     setGroupCombineScores(id) {
-      this.socket.emit('setGroupCombineScores', {id: id})
+      bus.$emit('sendSetGroupCombineScores', {id: id})
     },
     deleteGroup(id) {
-      this.socket.emit('deleteGroup', {id: id})
+      bus.$emit('sendDeleteGroup', {id: id})
     }
   }
 }

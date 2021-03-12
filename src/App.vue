@@ -7,7 +7,7 @@
       <span v-if="demo">(Demo)</span>
     </h1>
     <div v-if="currentTab == 'setup'">
-      <SetUp :socket="socket" />
+      <SetUp />
     </div>
     <div v-if="currentTab == 'racing'">
       <div v-if="isHost" :class="{hidden : running }" class="current-race">
@@ -77,20 +77,21 @@
         </div>
 
         <div :class="{hidden : running }" class="card-deck">
-          <Races :socket="socket" />
+          <Races />
           <Winnings v-if="!demo" />
         </div>
 
-        <Demo v-if="demo" :socket="socket" />
+        <Demo v-if="demo" />
       </div>
 
-      <Quiz v-if="quiz" :socket="socket" />
+      <Quiz v-if="quiz" />
     </div>
   </div>
 </template>
 
 <script>
-import io from 'socket.io-client'
+import bus from './socket.js'
+
 import params from './lib/params.js'
 import video from './lib/video.js'
 
@@ -155,15 +156,6 @@ export default {
     }
   },
   created() {
-    let connStr
-    if (location.hostname == 'localhost') {
-      connStr = 'http://localhost:3010'
-    } else {
-      connStr = 'https://agilesimulations.co.uk:3010'
-    }
-    console.log('Connecting to: ' + connStr)
-    this.socket = io(connStr)
-
     if (params.isParam('host')) {
       this.$store.dispatch('updateHost', true)
     }
@@ -185,54 +177,54 @@ export default {
       }
     }
 
-    this.socket.on('loadRaces', (data) => {
+    bus.$on('loadRaces', (data) => {
       this.$store.dispatch('updateRaces', data)
     })
 
-    this.socket.on('loadGroups', (data) => {
+    bus.$on('loadGroups', (data) => {
       this.$store.dispatch('updateGroups', data)
     })
 
-    this.socket.on('showQuizRound', () => {
+    bus.$on('showQuizRound', () => {
       this.$store.dispatch('showQuizRound', true)
     })
 
-    this.socket.on('hideQuizRound', () => {
+    bus.$on('hideQuizRound', () => {
       this.$store.dispatch('showQuizRound', false)
     })
 
-    this.socket.on('setQuizSlide', (data) => {
+    bus.$on('setQuizSlide', (data) => {
       this.$store.dispatch('setQuizSlide', data)
     })
 
-    this.socket.on('backToBetting', () => {
+    bus.$on('backToBetting', () => {
       this.$store.dispatch('updateWatchingBetting', false)
       this.$store.dispatch('updateRunning', false)
     })
 
-    this.socket.on('watching', (data) => {
+    bus.$on('watching', (data) => {
       this.$store.dispatch('updateWatching', data)
     })
 
-    this.socket.on('loadSlides', (data) => {
+    bus.$on('loadSlides', (data) => {
       this.$store.dispatch('updateSlides', data)
     })
 
-    this.socket.emit('loadRaces')
-    this.socket.emit('loadGroups')
+    bus.$emit('sendLoadRaces')
+    bus.$emit('sendLoadGroups')
   },
   mounted() {
-    this.socket.on('testVideo', () => {
+    bus.$on('testVideo', () => {
       this._testVideo()
     })
-    this.socket.on('testVideoFrom', () => {
+    bus.$on('testVideoFrom', () => {
       this._testVideoFrom()
     })
-    this.socket.on('stopTest', () => {
+    bus.$on('stopTest', () => {
       this._stopTest()
     })
 
-    this.socket.on('playPause', () => {
+    bus.$on('playPause', () => {
       const video = document.getElementById('video')
       if (video.paused) {
         video.play()
@@ -245,21 +237,21 @@ export default {
 
     const self = this
     document.getElementById('video').onended = function() {
-      self.socket.emit('watching', {groupId: self.currentGroup.id, field: 'racing', watching: false})
+      bus.$emit('sendWatching', {groupId: self.currentGroup.id, field: 'racing', watching: false})
     }
   },
   methods: {
     playPause() {
-      this.socket.emit('playPause')
+      bus.$emit('sendPlayPause')
     },
     testVideo() {
-      this.socket.emit('testVideo')
+      bus.$emit('sendTestVideo')
     },
     testVideoFrom() {
-      this.socket.emit('testVideoFrom')
+      bus.$emit('sendTestVideoFrom')
     },
     stopTest() {
-      this.socket.emit('stopTest')
+      bus.$emit('sendStopTest')
     },
     _testVideo() {
       document.getElementById('video').controls = true
@@ -277,22 +269,22 @@ export default {
       this.$store.dispatch('updateRunning', false)
     },
     nextRace() {
-      this.socket.emit('setNextRace', {groupId: this.currentGroup.id})
+      bus.$emit('sendSetNextRace', {groupId: this.currentGroup.id})
     },
     showQuizRound() {
-      this.socket.emit('showQuizRound', {groupId: this.currentGroup.id})
+      bus.$emit('sendShowQuizRound', {groupId: this.currentGroup.id})
     },
     finishQuizRound() {
-      this.socket.emit('finishQuizRound', {groupId: this.currentGroup.id})
+    bus.$emit('sendFinishQuizRound', {groupId: this.currentGroup.id})
     },
     restart() {
-      this.socket.emit('restart', {groupId: this.currentGroup.id})
+      bus.$emit('sendRestart', {groupId: this.currentGroup.id})
     },
     backToBetting() {
-      this.socket.emit('backToBetting', {groupId: this.currentGroup.id})
+      bus.$emit('sendBackToBetting', {groupId: this.currentGroup.id})
     },
     finish() {
-      this.socket.emit('finish', {groupId: this.currentGroup.id})
+      bus.$emit('sendFinish', {groupId: this.currentGroup.id})
     },
     finishDemoBetting() {
       this.$store.dispatch('updateDemoBetting', false)
@@ -305,8 +297,6 @@ export default {
 </script>
 
 <style lang="scss">
-
-  .socket { background-color: yellow; }
 
   div { vertical-align: top; }
 

@@ -1,3 +1,4 @@
+import bus from '../socket.js'
 
 const Video = {
 
@@ -23,11 +24,11 @@ const Video = {
     const video = document.getElementById('video')
     video.pause()
   },
-  pauseVideoAt: function(n, socket, groupId) {
+  pauseVideoAt: function(n, groupId) {
     const timeUpdateFunction = function() {
       if (this.currentTime >= n) {
           this.pause()
-          socket.emit('watching', {groupId: groupId, field: 'betting', watching: false})
+          bus.$emit('sendWatching', {groupId: groupId, field: 'betting', watching: false})
           this.removeEventListener('timeupdate',timeUpdateFunction)
       }
     }

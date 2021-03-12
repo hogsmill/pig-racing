@@ -1,7 +1,7 @@
 <template>
   <div class="races card-body bg-light mb-6 col-md-6 no-padding-r-l" :class="{'demo': demo}">
     <div v-for="(race, raceIndex) in races" :key="raceIndex">
-      <Race v-if="currentGroup.include && currentGroup.include[race.name]" :race="race" :race-index="raceIndex" :socket="socket" />
+      <Race v-if="currentGroup.include && currentGroup.include[race.name]" :race="race" :race-index="raceIndex" />
     </div>
   </div>
 </template>
@@ -13,9 +13,6 @@ export default {
   components: {
     Race
   },
-  props: [
-    'socket'
-  ],
   computed: {
     demo() {
       return this.$store.getters.getDemo

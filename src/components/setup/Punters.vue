@@ -85,10 +85,9 @@
 </template>
 
 <script>
+import bus from '../../socket.js'
+
 export default {
-  props: [
-    'socket'
-  ],
   data() {
     return {
       showPunters: false
@@ -121,19 +120,19 @@ export default {
       if (!punter) {
         alert('Please enter a value')
       } else {
-        this.socket.emit('addPunter', {groupId: this.editingGroupId, punter: punter})
+        bus.$emit('sendAddPunter', {groupId: this.editingGroupId, punter: punter})
         document.getElementById('new-punter').value = ''
       }
     },
     setMaxPunters() {
       const n = document.getElementById('max-punters').value
-      this.socket.emit('setMaxPunters', {groupId: this.editingGroupId, value: n})
+      bus.$emit('sendSetMaxPunters', {groupId: this.editingGroupId, value: n})
     },
     deletePunter(id) {
-      this.socket.emit('deletePunter', {groupId: this.editingGroupId, id: id})
+      bus.$emit('sendDeletePunter', {groupId: this.editingGroupId, id: id})
     },
     toggleInclude(id) {
-      this.socket.emit('toggleIncludePunter', {groupId: this.editingGroupId, id: id})
+      bus.$emit('sendToggleIncludePunter', {groupId: this.editingGroupId, id: id})
     }
   }
 }

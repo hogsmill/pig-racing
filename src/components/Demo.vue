@@ -79,12 +79,11 @@
 </template>
 
 <script>
+import bus from '../socket.js'
+
 import video from '../lib/video.js'
 
 export default {
-  props: [
-    'socket'
-  ],
   data() {
     return {
       page: 1
@@ -96,7 +95,7 @@ export default {
     }
   },
   created() {
-    this.socket.on('runDemoRace', () => {
+    bus.$on('runDemoRace', () => {
       this.$store.dispatch('updateRunning', true)
       video.setVideoTime(110)
       video.playVideo()
@@ -109,10 +108,10 @@ export default {
     },
     showDemoPigs() {
       this.$store.dispatch('updateDemoRaceFinished', false)
-      this.socket.emit('showPigs', {raceIndex: 0})
+      bus.$emit('sendShowPigs', {raceIndex: 0})
     },
     runDemoRace: function() {
-      this.socket.emit('runDemoRace')
+      bus.$emit('sendRunDemoRace')
     },
   }
 }

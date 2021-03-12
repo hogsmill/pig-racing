@@ -48,13 +48,14 @@
 </template>
 
 <script>
+import bus from '../../socket.js'
+
 import video from '../../lib/video.js'
 
 export default {
   props: [
     'raceIndex',
-    'race',
-    'socket'
+    'race'
   ],
   computed: {
     host() {
@@ -83,7 +84,7 @@ export default {
     }
   },
   mounted() {
-    this.socket.on('showPigs', (data) => {
+    bus.$on('showPigs', (data) => {
       if (this.raceIndex == data.raceIndex) {
         this.$store.dispatch('updateRunning', true)
         this.$store.dispatch('updateWatchingBetting', true)
@@ -95,28 +96,28 @@ export default {
           video.playVideo()
         }, 1000)
         this.$store.dispatch('updatePlaying', true)
-        this.socket.emit('watching', {groupId: this.currentGroup.id, field: 'betting', watching: true})
-        video.pauseVideoAt(110, this.socket, this.currentGroup.id)
+        bus.$emit('sendWatching', {groupId: this.currentGroup.id, field: 'betting', watching: true})
+        video.pauseVideoAt(110, this.currentGroup.id)
       }
     })
 
-    this.socket.on('runRace', () => {
+    bus.$on('runRace', () => {
       this.$store.dispatch('updateRunning', true)
       video.setVideoTime(110)
       window.setTimeout(function() {
         video.playVideo()
       }, 1000)
-      this.socket.emit('watching', {groupId: this.currentGroup.id, field: 'racing', watching: true})
+      bus.$emit('sendWatching', {groupId: this.currentGroup.id, field: 'racing', watching: true})
       this.$store.dispatch('updatePlaying', false)  // Why?
     })
 
-    this.socket.on('finish', () => {
+    bus.$on('finish', () => {
       this.$store.dispatch('updateRunning', false)
       video.pauseVideo()
       this.$store.dispatch('updateRaceHasRun', this.currentRace)
     })
 
-    this.socket.on('place', (data) => {
+    bus.$on('place', (data) => {
       this._place(data['race'], data['pig'], data['place'])
     })
   },
@@ -137,13 +138,13 @@ export default {
       }
     },
     betOn(pig, punter) {
-      this.socket.emit('bet', {groupId: this.currentGroup.id, pig: pig, punter: punter})
+      bus.$emit('sendBet', {groupId: this.currentGroup.id, pig: pig, punter: punter})
     },
     showPigs(raceIndex) {
-      this.socket.emit('showPigs', {raceIndex: raceIndex})
+      bus.$emit('sendShowPigs', {raceIndex: raceIndex})
     },
     runRace(race) {
-      this.socket.emit('runRace', {race: race})
+      bus.$emit('sendRunRace', {race: race})
     },
     pauseVideo() {
       video.pauseVideo()

@@ -81,10 +81,9 @@
 </template>
 
 <script>
+import bus from '../../socket.js'
+
 export default {
-  props: [
-    'socket'
-  ],
   data() {
     return {
       showQuizzes: false
@@ -108,7 +107,7 @@ export default {
     }
   },
   created(){
-    this.socket.emit('loadSlides')
+    bus.$emit('sendLoadSlides')
   },
   methods: {
     setShowQuizzes(val) {
@@ -120,7 +119,7 @@ export default {
     },
     setNoOfRounds() {
       const noOfRounds = document.getElementById('no-of-rounds').value
-      this.socket.emit('setNoOfRounds', {groupId: this.editingGroupId, noOfRounds: noOfRounds})
+      bus.$emit('sendSetNoOfRounds', {groupId: this.editingGroupId, noOfRounds: noOfRounds})
     },
     inRound(slide, round) {
       let inRound = false
@@ -135,9 +134,9 @@ export default {
     putSlideInRound(slide, round) {
       const checked = document.getElementById('slide-round-' + slide + '-' + round).checked
       if (checked) {
-        this.socket.emit('putSlideInRound', {groupId: this.editingGroupId, slide: slide, round: round})
+         bus.$emit('sendPutSlideInRound', {groupId: this.editingGroupId, slide: slide, round: round})
       } else {
-        this.socket.emit('deleteSlideFromRound', {groupId: this.editingGroupId, slide: slide, round: round})
+        bus.$emit('sendDeleteSlideFromRound', {groupId: this.editingGroupId, slide: slide, round: round})
       }
     }
   }

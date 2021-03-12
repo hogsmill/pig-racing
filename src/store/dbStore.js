@@ -577,31 +577,6 @@ module.exports = {
         })
       }
     })
-  },
-
-  setAsMarked: function(db, io, data, debugOn) {
-
-    if (debugOn) { console.log('setAsMarked', data) }
-
-    db.collection('pigRacing').findOne({id: data.groupId}, function(err, res) {
-      if (err) throw err
-      if (res) {
-        const punters = []
-        for (let i = 0; i < res.punters.length; i++) {
-          const punter = res.punters[i]
-          if (punter.id == data.punterId) {
-            punter.marked = true
-          }
-          punters.push(punter)
-        }
-        db.collection('pigRacing').updateOne({'_id': res._id}, {$set: {punters}}, function(err, res) {
-          if (err) throw err
-          if (res) {
-            _loadGroups(db, io)
-          }
-        })
-      }
-    })
   }
 
 }
