@@ -120,19 +120,19 @@ export default {
       if (!punter) {
         alert('Please enter a value')
       } else {
-        bus.$emit('sendAddPunter', {groupId: this.editingGroupId, punter: punter})
+        bus.emit('sendAddPunter', {groupId: this.editingGroupId, punter: punter})
         document.getElementById('new-punter').value = ''
       }
     },
     setMaxPunters() {
       const n = document.getElementById('max-punters').value
-      bus.$emit('sendSetMaxPunters', {groupId: this.editingGroupId, value: n})
+      bus.emit('sendSetMaxPunters', {groupId: this.editingGroupId, value: n})
     },
     deletePunter(id) {
-      bus.$emit('sendDeletePunter', {groupId: this.editingGroupId, id: id})
+      bus.emit('sendDeletePunter', {groupId: this.editingGroupId, id: id})
     },
     toggleInclude(id) {
-      bus.$emit('sendToggleIncludePunter', {groupId: this.editingGroupId, id: id})
+      bus.emit('sendToggleIncludePunter', {groupId: this.editingGroupId, id: id})
     }
   }
 }

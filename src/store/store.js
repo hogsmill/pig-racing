@@ -1,7 +1,5 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
 
-Vue.use(Vuex)
+import { createStore } from 'vuex'
 
 function currentGroup(state) {
   const group = state.groups.find(function(g) {
@@ -17,7 +15,7 @@ function currentEditingGroup(state) {
   return editingGroup ? editingGroup : {}
 }
 
-export const store = new Vuex.Store({
+export const store = createStore({
   state: {
     thisGame: 'Pig Racing',
     currentTab: 'racing',

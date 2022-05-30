@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="mb-4">
-    <Header />
+    <appHeader />
     <h1>
       Pig Racing
       <span v-if="isHost">(Host<span v-if="currentGroup.id"> - {{ currentGroup.group }}</span>)</span>
@@ -95,7 +95,7 @@ import bus from './socket.js'
 import params from './lib/params.js'
 import video from './lib/video.js'
 
-import Header from './components/Header.vue'
+import appHeader from './components/Header.vue'
 import SetUp from './components/SetUp.vue'
 import Players from './components/Players.vue'
 import Races from './components/Races.vue'
@@ -106,7 +106,7 @@ import Demo from './components/Demo.vue'
 export default {
   name: 'App',
   components: {
-    Header,
+    appHeader,
     SetUp,
     Players,
     Races,
@@ -177,54 +177,54 @@ export default {
       }
     }
 
-    bus.$on('loadRaces', (data) => {
+    bus.on('loadRaces', (data) => {
       this.$store.dispatch('updateRaces', data)
     })
 
-    bus.$on('loadGroups', (data) => {
+    bus.on('loadGroups', (data) => {
       this.$store.dispatch('updateGroups', data)
     })
 
-    bus.$on('showQuizRound', () => {
+    bus.on('showQuizRound', () => {
       this.$store.dispatch('showQuizRound', true)
     })
 
-    bus.$on('hideQuizRound', () => {
+    bus.on('hideQuizRound', () => {
       this.$store.dispatch('showQuizRound', false)
     })
 
-    bus.$on('setQuizSlide', (data) => {
+    bus.on('setQuizSlide', (data) => {
       this.$store.dispatch('setQuizSlide', data)
     })
 
-    bus.$on('backToBetting', () => {
+    bus.on('backToBetting', () => {
       this.$store.dispatch('updateWatchingBetting', false)
       this.$store.dispatch('updateRunning', false)
     })
 
-    bus.$on('watching', (data) => {
+    bus.on('watching', (data) => {
       this.$store.dispatch('updateWatching', data)
     })
 
-    bus.$on('loadSlides', (data) => {
+    bus.on('loadSlides', (data) => {
       this.$store.dispatch('updateSlides', data)
     })
 
-    bus.$emit('sendLoadRaces')
-    bus.$emit('sendLoadGroups')
+    bus.emit('sendLoadRaces')
+    bus.emit('sendLoadGroups')
   },
   mounted() {
-    bus.$on('testVideo', () => {
+    bus.on('testVideo', () => {
       this._testVideo()
     })
-    bus.$on('testVideoFrom', () => {
+    bus.on('testVideoFrom', () => {
       this._testVideoFrom()
     })
-    bus.$on('stopTest', () => {
+    bus.on('stopTest', () => {
       this._stopTest()
     })
 
-    bus.$on('playPause', () => {
+    bus.on('playPause', () => {
       const video = document.getElementById('video')
       if (video.paused) {
         video.play()
@@ -237,21 +237,21 @@ export default {
 
     const self = this
     document.getElementById('video').onended = function() {
-      bus.$emit('sendWatching', {groupId: self.currentGroup.id, field: 'racing', watching: false})
+      bus.emit('sendWatching', {groupId: self.currentGroup.id, field: 'racing', watching: false})
     }
   },
   methods: {
     playPause() {
-      bus.$emit('sendPlayPause')
+      bus.emit('sendPlayPause')
     },
     testVideo() {
-      bus.$emit('sendTestVideo')
+      bus.emit('sendTestVideo')
     },
     testVideoFrom() {
-      bus.$emit('sendTestVideoFrom')
+      bus.emit('sendTestVideoFrom')
     },
     stopTest() {
-      bus.$emit('sendStopTest')
+      bus.emit('sendStopTest')
     },
     _testVideo() {
       document.getElementById('video').controls = true
@@ -269,22 +269,22 @@ export default {
       this.$store.dispatch('updateRunning', false)
     },
     nextRace() {
-      bus.$emit('sendSetNextRace', {groupId: this.currentGroup.id})
+      bus.emit('sendSetNextRace', {groupId: this.currentGroup.id})
     },
     showQuizRound() {
-      bus.$emit('sendShowQuizRound', {groupId: this.currentGroup.id})
+      bus.emit('sendShowQuizRound', {groupId: this.currentGroup.id})
     },
     finishQuizRound() {
-    bus.$emit('sendFinishQuizRound', {groupId: this.currentGroup.id})
+    bus.emit('sendFinishQuizRound', {groupId: this.currentGroup.id})
     },
     restart() {
-      bus.$emit('sendRestart', {groupId: this.currentGroup.id})
+      bus.emit('sendRestart', {groupId: this.currentGroup.id})
     },
     backToBetting() {
-      bus.$emit('sendBackToBetting', {groupId: this.currentGroup.id})
+      bus.emit('sendBackToBetting', {groupId: this.currentGroup.id})
     },
     finish() {
-      bus.$emit('sendFinish', {groupId: this.currentGroup.id})
+      bus.emit('sendFinish', {groupId: this.currentGroup.id})
     },
     finishDemoBetting() {
       this.$store.dispatch('updateDemoBetting', false)

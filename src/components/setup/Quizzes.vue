@@ -107,7 +107,7 @@ export default {
     }
   },
   created(){
-    bus.$emit('sendLoadSlides')
+    bus.emit('sendLoadSlides')
   },
   methods: {
     setShowQuizzes(val) {
@@ -119,7 +119,7 @@ export default {
     },
     setNoOfRounds() {
       const noOfRounds = document.getElementById('no-of-rounds').value
-      bus.$emit('sendSetNoOfRounds', {groupId: this.editingGroupId, noOfRounds: noOfRounds})
+      bus.emit('sendSetNoOfRounds', {groupId: this.editingGroupId, noOfRounds: noOfRounds})
     },
     inRound(slide, round) {
       let inRound = false
@@ -134,9 +134,9 @@ export default {
     putSlideInRound(slide, round) {
       const checked = document.getElementById('slide-round-' + slide + '-' + round).checked
       if (checked) {
-         bus.$emit('sendPutSlideInRound', {groupId: this.editingGroupId, slide: slide, round: round})
+         bus.emit('sendPutSlideInRound', {groupId: this.editingGroupId, slide: slide, round: round})
       } else {
-        bus.$emit('sendDeleteSlideFromRound', {groupId: this.editingGroupId, slide: slide, round: round})
+        bus.emit('sendDeleteSlideFromRound', {groupId: this.editingGroupId, slide: slide, round: round})
       }
     }
   }

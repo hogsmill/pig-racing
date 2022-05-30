@@ -26,7 +26,7 @@ export default {
     Answers
   },
   created() {
-    bus.$emit('sendLoadGroups')
+    bus.emit('sendLoadGroups')
   }
 }
 </script>

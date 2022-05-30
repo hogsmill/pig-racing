@@ -81,24 +81,24 @@ export default {
       if (!group) {
         alert('Please enter a value')
       } else {
-        bus.$emit('sendAddGroup', {group: group})
+        bus.emit('sendAddGroup', {group: group})
         document.getElementById('new-group').value = ''
       }
     },
     setGroup(id) {
-      bus.$emit('sendSetGroup', {id: id})
+      bus.emit('sendSetGroup', {id: id})
     },
     setGroupDoublePointsOnLastRace(id) {
-      bus.$emit('sendSetGroupDoublePointsOnLastRace', {id: id})
+      bus.emit('sendSetGroupDoublePointsOnLastRace', {id: id})
     },
     setGroupQuiz(id) {
-      bus.$emit('sendSetGroupQuiz', {id: id})
+      bus.emit('sendSetGroupQuiz', {id: id})
     },
     setGroupCombineScores(id) {
-      bus.$emit('sendSetGroupCombineScores', {id: id})
+      bus.emit('sendSetGroupCombineScores', {id: id})
     },
     deleteGroup(id) {
-      bus.$emit('sendDeleteGroup', {id: id})
+      bus.emit('sendDeleteGroup', {id: id})
     }
   }
 }

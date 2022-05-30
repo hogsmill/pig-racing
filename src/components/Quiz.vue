@@ -81,21 +81,21 @@ export default {
   },
   methods: {
     previous() {
-      bus.$emit('sendSetQuizSlide', {groupId: this.currentGroup.id, slide: this.currentSlideNumber - 1})
+      bus.emit('sendSetQuizSlide', {groupId: this.currentGroup.id, slide: this.currentSlideNumber - 1})
     },
     next() {
-      bus.$emit('sendSetQuizSlide', {groupId: this.currentGroup.id, slide: this.currentSlideNumber + 1})
+      bus.emit('sendSetQuizSlide', {groupId: this.currentGroup.id, slide: this.currentSlideNumber + 1})
       this.submitted = false
       this.answer = ''
     },
     goTo() {
       const n = document.getElementById('go-to').value
-      bus.$emit('sendSetQuizSlide', {groupId: this.currentGroup.id, slide: parseInt(n) + 1})
+      bus.emit('sendSetQuizSlide', {groupId: this.currentGroup.id, slide: parseInt(n) + 1})
     },
     submitAnswer(player) {
       const answer = document.getElementById('answer').value
       if (confirm('Is "' + answer + '" your final answer?')) {
-        bus.$emit('sendSubmitAnswer', {groupId: this.currentGroup.id, punterId: player.id, slide: this.currentSlide, answer: answer})
+        bus.emit('sendSubmitAnswer', {groupId: this.currentGroup.id, punterId: player.id, slide: this.currentSlide, answer: answer})
         this.submitted = true
         this.answer = answer
       }

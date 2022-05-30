@@ -28,7 +28,7 @@ const Video = {
     const timeUpdateFunction = function() {
       if (this.currentTime >= n) {
           this.pause()
-          bus.$emit('sendWatching', {groupId: groupId, field: 'betting', watching: false})
+          bus.emit('sendWatching', {groupId: groupId, field: 'betting', watching: false})
           this.removeEventListener('timeupdate',timeUpdateFunction)
       }
     }

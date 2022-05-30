@@ -95,7 +95,7 @@ export default {
     }
   },
   created() {
-    bus.$on('runDemoRace', () => {
+    bus.on('runDemoRace', () => {
       this.$store.dispatch('updateRunning', true)
       video.setVideoTime(110)
       video.playVideo()
@@ -108,10 +108,10 @@ export default {
     },
     showDemoPigs() {
       this.$store.dispatch('updateDemoRaceFinished', false)
-      bus.$emit('sendShowPigs', {raceIndex: 0})
+      bus.emit('sendShowPigs', {raceIndex: 0})
     },
     runDemoRace: function() {
-      bus.$emit('sendRunDemoRace')
+      bus.emit('sendRunDemoRace')
     },
   }
 }

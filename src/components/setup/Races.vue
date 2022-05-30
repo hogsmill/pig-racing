@@ -77,7 +77,7 @@ export default {
       this.$store.dispatch('setEditingGroupId', groupId)
     },
     includeRace(race) {
-      bus.$emit('sendIncludeRace', {groupId: this.editingGroupId, race: race})
+      bus.emit('sendIncludeRace', {groupId: this.editingGroupId, race: race})
     }
   }
 }

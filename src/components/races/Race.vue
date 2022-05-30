@@ -84,7 +84,7 @@ export default {
     }
   },
   mounted() {
-    bus.$on('showPigs', (data) => {
+    bus.on('showPigs', (data) => {
       if (this.raceIndex == data.raceIndex) {
         this.$store.dispatch('updateRunning', true)
         this.$store.dispatch('updateWatchingBetting', true)
@@ -96,28 +96,28 @@ export default {
           video.playVideo()
         }, 1000)
         this.$store.dispatch('updatePlaying', true)
-        bus.$emit('sendWatching', {groupId: this.currentGroup.id, field: 'betting', watching: true})
+        bus.emit('sendWatching', {groupId: this.currentGroup.id, field: 'betting', watching: true})
         video.pauseVideoAt(110, this.currentGroup.id)
       }
     })
 
-    bus.$on('runRace', () => {
+    bus.on('runRace', () => {
       this.$store.dispatch('updateRunning', true)
       video.setVideoTime(110)
       window.setTimeout(function() {
         video.playVideo()
       }, 1000)
-      bus.$emit('sendWatching', {groupId: this.currentGroup.id, field: 'racing', watching: true})
+      bus.emit('sendWatching', {groupId: this.currentGroup.id, field: 'racing', watching: true})
       this.$store.dispatch('updatePlaying', false)  // Why?
     })
 
-    bus.$on('finish', () => {
+    bus.on('finish', () => {
       this.$store.dispatch('updateRunning', false)
       video.pauseVideo()
       this.$store.dispatch('updateRaceHasRun', this.currentRace)
     })
 
-    bus.$on('place', (data) => {
+    bus.on('place', (data) => {
       this._place(data['race'], data['pig'], data['place'])
     })
   },
@@ -138,13 +138,13 @@ export default {
       }
     },
     betOn(pig, punter) {
-      bus.$emit('sendBet', {groupId: this.currentGroup.id, pig: pig, punter: punter})
+      bus.emit('sendBet', {groupId: this.currentGroup.id, pig: pig, punter: punter})
     },
     showPigs(raceIndex) {
-      bus.$emit('sendShowPigs', {raceIndex: raceIndex})
+      bus.emit('sendShowPigs', {raceIndex: raceIndex})
     },
     runRace(race) {
-      bus.$emit('sendRunRace', {race: race})
+      bus.emit('sendRunRace', {race: race})
     },
     pauseVideo() {
       video.pauseVideo()
