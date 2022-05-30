@@ -7,6 +7,7 @@ fi
 PORT=3010
 PWD=`pwd`
 APP=`basename $PWD`
+LOGFILE="/usr/apps/logs/$APP.log"
 git stash
 GIT=`git pull`
 echo $GIT
@@ -28,4 +29,5 @@ if [ -f "src/server.js" ]; then
   if [ "$KEEP" != "" ]; then
     kill -9 $KEEP
   fi
+  node /usr/apps/pig-racing/src/server.js $PORT "$APP" $LOGFILE &
 fi
