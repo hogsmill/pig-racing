@@ -1,6 +1,5 @@
 <template>
   <div>
-    Modals: {{ modals }}
     <Feedback v-if="modals['feedback']" />
   </div>
 </template>
