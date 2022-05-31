@@ -322,6 +322,6 @@ export default {
   .avatar { width: 20px; height: 20px; margin-right: 2px; }
 
   .video { vertical-align: middle; }
-  #video { width: 100%; }
+  #video { width: 100%; max-height: 700px;}
 
 </style>
