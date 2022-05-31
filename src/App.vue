@@ -86,6 +86,7 @@
 
       <Quiz v-if="quiz" />
     </div>
+    <Modals />
   </div>
 </template>
 
@@ -102,6 +103,7 @@ import Races from './components/Races.vue'
 import Winnings from './components/Winnings.vue'
 import Quiz from './components/Quiz.vue'
 import Demo from './components/Demo.vue'
+import Modals from './components/Modals.vue'
 
 export default {
   name: 'App',
@@ -112,7 +114,8 @@ export default {
     Races,
     Winnings,
     Quiz,
-    Demo
+    Demo,
+    Modals
   },
   computed: {
     isHost() {

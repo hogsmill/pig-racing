@@ -17,6 +17,9 @@ function currentEditingGroup(state) {
 
 export const store = createStore({
   state: {
+    modals: {
+      feedback: false
+    },
     thisGame: 'Pig Racing',
     currentTab: 'racing',
     host: false,
@@ -48,6 +51,9 @@ export const store = createStore({
     },
     getHost: (state) => {
       return state.host
+    },
+    getModals: (state) => {
+      return state.modals
     },
     getCurrentTab: (state) => {
       return state.currentTab
@@ -210,6 +216,16 @@ export const store = createStore({
       state.demo = payload
       state.host = false
     },
+    showModal: (state, payload) => {
+      const modals = Object.keys(state.modals)
+      for (let i = 0; i < modals.length; i++) {
+        state.modals[modals[i]] = false
+      }
+      state.modals[payload] = true
+    },
+    hideModal: (state, payload) => {
+      state.modals[payload] = false
+    },
     updateDemoRaceFinished: (state, payload) => {
       state.demoRaceFinished = payload
     },
@@ -275,6 +291,15 @@ export const store = createStore({
     },
     updateCurrentTab: ({ commit }, payload) => {
       commit('updateCurrentTab', payload)
+    },
+    updateTab: ({ commit }, payload) => {
+      commit('updateTab', payload)
+    },
+    showModal: ({ commit }, payload) => {
+      commit('showModal', payload)
+    },
+    hideModal: ({ commit }, payload) => {
+      commit('hideModal', payload)
     },
     updateDemo: ({ commit }, payload) => {
       commit('updateDemo', payload)
